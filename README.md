@@ -86,6 +86,36 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ---
 
+## 🧪 Testing
+
+This project is set up with a testing framework for both the frontend application and the backend functions.
+
+### Frontend Tests (React)
+
+We use **Jest** and **React Testing Library** for unit and component testing.
+
+-   **Running Tests**: To run the frontend tests, execute the following command from the root directory:
+    ```bash
+    npm test
+    ```
+-   **Test Location**: Test files are co-located with the components they are testing (e.g., `Button.tsx` and `Button.test.tsx`).
+
+### Firebase Functions Tests
+
+We use **Jest** and **`firebase-functions-test`** to test the backend logic. This allows for both online (against a live Firebase project) and offline (against emulators) testing.
+
+1.  **Setup (Offline Testing)**:
+    -   Ensure the Firebase Emulators are running (`firebase emulators:start`).
+    -   The test scripts are pre-configured to connect to the local emulators.
+
+2.  **Running Tests**: To run the functions tests, navigate to the `functions` directory and run the test command:
+    ```bash
+    cd functions
+    npm test
+    ```
+
+---
+
 ## 📁 Project Structure
 
 The project is organized into two main parts: the frontend React application (`src`) and the backend Cloud Functions (`functions`).
