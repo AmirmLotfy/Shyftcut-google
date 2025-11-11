@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -10,13 +10,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
 
+// Large avatar for mobile menu
 const Avatar: React.FC<{ name?: string | null }> = ({ name }) => {
   const initials = name
     ?.split(' ')
     .map((n) => n[0])
     .join('')
     .substring(0, 2)
-    .toUpperCase() || '...';
+    .toUpperCase() || '..';
 
   return (
     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
@@ -24,6 +25,23 @@ const Avatar: React.FC<{ name?: string | null }> = ({ name }) => {
     </div>
   );
 };
+
+// Smaller avatar for header dropdown
+const HeaderAvatar: React.FC<{ name?: string | null }> = ({ name }) => {
+  const initials = name
+    ?.split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || '..';
+
+  return (
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-base flex-shrink-0 ring-2 ring-white/50">
+      {initials}
+    </div>
+  );
+};
+
 
 const MobileMenu: React.FC<{
   isOpen: boolean;
@@ -186,13 +204,34 @@ const MobileMenu: React.FC<{
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, loading } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { user, userProfile, loading } = useAuth();
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { name: 'Features', href: '/#features' },
     { name: 'Pricing', href: '/pricing' },
   ];
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            setIsDropdownOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    setIsDropdownOpen(false);
+    await signOut(auth);
+    navigate('/');
+  };
 
   return (
     <>
@@ -222,9 +261,47 @@ const Header: React.FC = () => {
               <div className="hidden md:flex items-center space-x-4">
                 {!loading &&
                   (user ? (
-                    <Button onClick={() => navigate('/dashboard')}>
-                      Dashboard
-                    </Button>
+                    <div className="relative" ref={dropdownRef}>
+                        <motion.button 
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
+                            className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                            aria-label="Open user menu"
+                        >
+                            <HeaderAvatar name={userProfile?.name} />
+                        </motion.button>
+                        <AnimatePresence>
+                            {isDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                                    className="absolute right-0 mt-2 w-64 origin-top-right bg-white rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-40"
+                                >
+                                    <div className="py-1">
+                                        <div className="px-4 py-3 border-b border-slate-200">
+                                            <p className="text-sm font-semibold text-slate-800 truncate">{userProfile?.name}</p>
+                                            <p className="text-sm text-slate-500 truncate">{userProfile?.email}</p>
+                                        </div>
+                                        <div className="p-1">
+                                            <Link to="/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-primary rounded-md transition-colors">
+                                                <ChartPieIcon className="w-5 h-5" /> Dashboard
+                                            </Link>
+                                            <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-primary rounded-md transition-colors">
+                                                <Cog6ToothIcon className="w-5 h-5" /> Settings
+                                            </Link>
+                                        </div>
+                                        <div className="p-1">
+                                            <button onClick={handleLogout} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                                                <ArrowRightOnRectangleIcon className="w-5 h-5" /> Log Out
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                   ) : (
                     <>
                         <Link to="/auth" className="text-base font-medium text-slate-500 hover:text-primary transition-colors">

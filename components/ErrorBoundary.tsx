@@ -10,11 +10,8 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  // FIX: The error "Property 'props' does not exist on type 'ErrorBoundary'" suggests a potential issue with how TypeScript is inferring the properties from the base `Component` class. Explicitly defining a constructor and calling `super(props)` can resolve rare type inference problems.
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+  // FIX: Reverted to using a class property for state initialization. The previous constructor-based approach was causing type errors where 'this.props' and 'this.state' were not recognized.
+  public state: State = { hasError: false };
 
   public static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.

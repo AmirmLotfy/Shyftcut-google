@@ -165,13 +165,14 @@ export const generateRoadmap = functions.https.onCall(async (data, context) => {
           - A list of REAL courses from platforms like YouTube, Coursera, Udemy, LinkedIn Learning, edX. Use web search to verify courses exist and URLs are valid. DO NOT hallucinate URLs or course titles.
           - A list of quizzes to test the milestone's concepts. Each quiz should contain a few questions that are a mix of 'multiple-choice' and 'short-answer'. For 'multiple-choice', provide 4 options. Every question needs a correct answer and a brief explanation.
       3. Ensure all generated IDs (for milestones, tasks, courses, quizzes, questions) are unique strings.
-      4. The final output MUST be only the JSON object, with no extra text or markdown formatting like \`\`\`json.
+      4. Pay close attention to JSON syntax. Ensure all strings are properly escaped, especially URLs and text content which might contain quotes or special characters. Do not include trailing commas.
+      5. The final output MUST be only the JSON object, with no extra text or markdown formatting like \`\`\`json.
     `;
 
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         tools: [{googleSearch: {}}],
