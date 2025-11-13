@@ -9,10 +9,10 @@ interface State {
   hasError: boolean;
 }
 
+// FIX: Changed to extend from the imported `Component` class directly.
+// This resolves type errors where `setState` and `props` were not being recognized on the class instance.
 class ErrorBoundary extends Component<Props, State> {
-  // Fix: Initialize state using class property syntax. This is a modern and concise
-  // approach that correctly types and assigns the initial state for the component,
-  // resolving issues where 'this.state' and 'this.props' might not be recognized.
+  // Initialize state using modern class property syntax.
   state: State = { hasError: false };
 
   public static getDerivedStateFromError(_: Error): State {
@@ -25,10 +25,11 @@ class ErrorBoundary extends Component<Props, State> {
     // You could also log the error to an error reporting service here
   }
 
-  // Use an arrow function for the event handler to automatically bind 'this'.
   private handleReset = () => {
     // A full page reload is a simple way to reset the entire application's state.
-    window.location.reload();
+    this.setState({ hasError: false }, () => {
+        window.location.reload();
+    });
   }
 
   public render(): ReactNode {

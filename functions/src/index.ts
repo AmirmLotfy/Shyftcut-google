@@ -1,8 +1,12 @@
 
-
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {GoogleGenAI, Type} from "@google/genai";
+import * as cors from "cors";
+
+// Initialize CORS middleware to allow requests from any origin.
+// The `onCall` convention requires this permissive setup.
+const corsHandler = cors({origin: true});
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();
@@ -105,170 +109,146 @@ export const checkTrialExpirations = functions.pubsub
 
 /**
  * HTTP-callable function to generate a learning roadmap using Gemini.
+ * Refactored to onRequest to handle CORS explicitly.
  */
-export const generateRoadmap = functions.https.onCall(async (data, context) => {
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (!geminiApiKey) {
-    throw new functions.https.HttpsError("failed-precondition", "The GEMINI_API_KEY environment variable is not set. Please set it in the Firebase console or using `firebase functions:secrets:set`.");
-  }
-
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "The function must be called while authenticated.");
-  }
-
-  const userId = context.auth.uid;
-  const userRef = db.collection("users").doc(userId);
-  const userDoc = await userRef.get();
-  const userData = userDoc.data();
-
-  // Rate Limiting Logic
-  if (userData?.subscriptionRole === "pro" && userData.trialEndsAt && userData.trialEndsAt.toDate() < new Date()) {
-    // Trial has expired, but scheduled function may not have run. Downgrade them.
-    await userRef.update({subscriptionRole: "free"});
-    throw new functions.https.HttpsError("permission-denied", "Your Pro trial has expired. Please upgrade to a paid plan to continue.");
-  }
-
-  if (userData?.subscriptionRole === "free" && userData.lastRoadmapGeneratedAt) {
-    const lastGenDate = userData.lastRoadmapGeneratedAt.toDate();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    if (lastGenDate > oneMonthAgo) {
-      throw new functions.https.HttpsError("resource-exhausted", "Free tier is limited to one roadmap per month. Please upgrade to Pro for more.");
-    }
-  }
-
-  const {preferences} = data;
-  if (!preferences) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing user preferences.");
-  }
-
-  const ai = new GoogleGenAI({apiKey: geminiApiKey});
-
-  const prompt = `
-      You are an expert career transition advisor. Generate a personalized 12-week learning roadmap for a user with the following profile:
-      - Career Goal: ${preferences.careerTrack}
-      - Experience Level: ${preferences.experienceLevel}
-      - Weekly Hours: ${preferences.weeklyHours}
-      - Learning Styles: ${preferences.learningStyles.join(", ")}
-      - Budget: ${preferences.resourcePreference}
-
-      Your response MUST be a single, valid JSON object that adheres to the following structure:
-      {
-        "title": "Roadmap Title",
-        "description": "Roadmap description.",
-        "totalHours": 120,
-        "estimatedCompletion": "12 Weeks",
-        "milestones": [
-          {
-            "id": "unique_id_1",
-            "title": "Milestone 1 Title",
-            "week": 1,
-            "description": "Milestone 1 description.",
-            "durationHours": 30,
-            "tasks": [{"id": "t1", "title": "Task 1"}],
-            "successCriteria": ["Criterion 1"],
-            "courses": [{"id": "c1", "title": "Course 1", "platform": "YouTube", "url": "https://...", "duration": "5 hours", "cost": "Free", "reasoning": "Why it's good."}],
-            "quizzes": [
-              {
-                "id": "q1", "title": "Quiz 1", "difficulty": 1, 
-                "questions": [
-                  {"id": "qq1", "text": "Question?", "type": "multiple-choice", "options": ["A", "B", "C", "D"], "correctAnswer": "A", "explanation": "Explanation."}
-                ]
-              }
-            ]
-          }
-        ]
-      }
-
-      CRITICAL INSTRUCTIONS:
-      1. The roadmap should cover 12 weeks, broken into 4 distinct milestones. Each milestone should represent a block of learning (e.g., Weeks 1-3, Weeks 4-6, etc.). The 'week' property for the milestones should be 1, 4, 7, and 10 respectively.
-      2. For each milestone, provide:
-          - A clear title and a 2-3 sentence description.
-          - Duration in hours (must fit within the user's weekly budget for 3 weeks).
-          - A list of specific, actionable tasks.
-          - A list of measurable success criteria.
-          - A list of REAL courses from platforms like YouTube, Coursera, Udemy, LinkedIn Learning, edX. Use web search to verify courses exist and URLs are valid. DO NOT hallucinate URLs or course titles.
-          - A list of quizzes to test the milestone's concepts. Each quiz should contain a few questions that are a mix of 'multiple-choice' and 'short-answer'. For 'multiple-choice', provide 4 options. Every question needs a correct answer and a brief explanation.
-      3. Ensure all generated IDs (for milestones, tasks, courses, quizzes, questions) are unique strings.
-      4. Pay close attention to JSON syntax. Ensure all strings are properly escaped, especially URLs and text content which might contain quotes or special characters. Do not include trailing commas.
-      5. The final output MUST be only the JSON object, with no extra text or markdown formatting like \`\`\`json.
-    `;
-
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        tools: [{googleSearch: {}}],
-      },
-    });
-
-    // More robust JSON extraction from a potentially markdown-formatted response
-    const rawText = response.text;
-    let jsonString = "";
-
-    // Try to find JSON within a markdown code block
-    const markdownMatch = rawText.match(/```(json)?\s*([\s\S]*?)\s*```/);
-    if (markdownMatch && markdownMatch[2]) {
-      jsonString = markdownMatch[2];
-    } else {
-      // Fallback: find the first '{' and last '}'
-      const jsonStart = rawText.indexOf("{");
-      const jsonEnd = rawText.lastIndexOf("}");
-      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-        jsonString = rawText.substring(jsonStart, jsonEnd + 1);
-      }
-    }
-
-    if (!jsonString) {
-      functions.logger.error("No JSON object could be extracted from Gemini response.", {rawText});
-      throw new Error("The AI failed to generate a valid roadmap structure.");
-    }
-
-    let roadmapData;
+export const generateRoadmap = functions.https.onRequest((req, res) => {
+  corsHandler(req, res, async () => {
     try {
-      roadmapData = JSON.parse(jsonString);
-    } catch (parseError) {
-      functions.logger.error("Failed to parse JSON string from Gemini response.", {jsonString, parseError});
-      throw new Error("The AI returned a malformed JSON object.");
+      // Manual Authentication to match onCall behavior
+      if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+        functions.logger.error("No authorization token found.");
+        res.status(403).send({ error: { message: "Unauthorized" } });
+        return;
+      }
+      const idToken = req.headers.authorization.split('Bearer ')[1];
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const userId = decodedToken.uid;
+
+      // Check for Gemini API key
+      const geminiApiKey = process.env.GEMINI_API_KEY;
+      if (!geminiApiKey) {
+          functions.logger.error("GEMINI_API_KEY is not set.");
+          res.status(500).send({ error: { message: "Server configuration error: API key missing." } });
+          return;
+      }
+      
+      const userRef = db.collection("users").doc(userId);
+      const userDoc = await userRef.get();
+      const userData = userDoc.data();
+
+      // Rate Limiting Logic
+      if (!userData) {
+          res.status(404).send({ error: { message: "User profile not found." } });
+          return;
+      }
+       if (userData?.subscriptionRole === "free" && userData.lastRoadmapGeneratedAt) {
+        const lastGenDate = userData.lastRoadmapGeneratedAt.toDate();
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        if (lastGenDate > oneMonthAgo) {
+            res.status(429).send({ error: { message: "Free tier is limited to one roadmap per month. Please upgrade to Pro for more." } });
+            return;
+        }
+      }
+
+      // Parse data from the callable function format
+      const { preferences } = req.body.data;
+      if (!preferences) {
+          res.status(400).send({ error: { message: "Missing user preferences in request body." } });
+          return;
+      }
+
+      const ai = new GoogleGenAI({apiKey: geminiApiKey});
+
+      const prompt = `
+        You are an expert career transition advisor. Generate a personalized 12-week learning roadmap for a user with the following profile:
+        - Career Goal: ${preferences.careerTrack}
+        - Experience Level: ${preferences.experienceLevel}
+        - Weekly Hours: ${preferences.weeklyHours}
+        - Learning Styles: ${preferences.learningStyles.join(", ")}
+        - Budget: ${preferences.resourcePreference}
+
+        Your response MUST be a single, valid JSON object that adheres to the following structure:
+        {
+          "title": "Roadmap Title", "description": "Roadmap description.", "totalHours": 120, "estimatedCompletion": "12 Weeks",
+          "milestones": [
+            {
+              "id": "unique_id_1", "title": "Milestone 1 Title", "week": 1, "description": "Milestone 1 description.", "durationHours": 30,
+              "tasks": [{"id": "t1", "title": "Task 1"}], "successCriteria": ["Criterion 1"],
+              "courses": [{"id": "c1", "title": "Course 1", "platform": "YouTube", "url": "https://...", "duration": "5 hours", "cost": "Free", "reasoning": "Why it's good."}],
+              "quizzes": [{"id": "q1", "title": "Quiz 1", "difficulty": 1, "questions": [{"id": "qq1", "text": "Question?", "type": "multiple-choice", "options": ["A", "B", "C", "D"], "correctAnswer": "A", "explanation": "Explanation."}]}]
+            }
+          ]
+        }
+        CRITICAL INSTRUCTIONS:
+        1. The roadmap should cover 12 weeks, broken into 4 distinct milestones. Each milestone should represent a block of learning (e.g., Weeks 1-3, Weeks 4-6, etc.). The 'week' property for the milestones should be 1, 4, 7, and 10 respectively.
+        2. For each milestone, provide: A clear title and description, duration in hours, actionable tasks, success criteria, REAL courses from platforms like YouTube, Coursera, Udemy (use web search to verify URLs), and quizzes with a mix of question types.
+        3. Ensure all generated IDs are unique strings.
+        4. Pay close attention to JSON syntax. Ensure all strings are properly escaped. Do not include trailing commas.
+        5. The final output MUST be only the JSON object, with no extra text or markdown formatting.
+      `;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: { tools: [{googleSearch: {}}] },
+      });
+
+      const rawText = response.text;
+      let jsonString = "";
+      const markdownMatch = rawText.match(/```(json)?\s*([\s\S]*?)\s*```/);
+      if (markdownMatch && markdownMatch[2]) {
+        jsonString = markdownMatch[2];
+      } else {
+        const jsonStart = rawText.indexOf("{");
+        const jsonEnd = rawText.lastIndexOf("}");
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+          jsonString = rawText.substring(jsonStart, jsonEnd + 1);
+        }
+      }
+
+      if (!jsonString) {
+        throw new Error("The AI failed to generate a valid roadmap structure.");
+      }
+
+      const roadmapData = JSON.parse(jsonString);
+      const {milestones, ...roadmapDetails} = roadmapData;
+      const roadmapRef = db.collection(`tracks/${userId}/roadmaps`).doc();
+      const batch = db.batch();
+
+      batch.set(roadmapRef, {
+        ...roadmapDetails,
+        track: preferences.careerTrack,
+        level: preferences.experienceLevel,
+        status: "in-progress",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      milestones.forEach((milestone: any) => {
+        const milestoneRef = roadmapRef.collection("milestones").doc(milestone.id);
+        const milestoneWithStatus = {
+          ...milestone,
+          tasks: milestone.tasks.map((task: any) => ({...task, completed: false})),
+          courses: milestone.courses.map((course: any) => ({...course, completed: false})),
+        };
+        batch.set(milestoneRef, milestoneWithStatus);
+      });
+
+      batch.update(userRef, { lastRoadmapGeneratedAt: admin.firestore.FieldValue.serverTimestamp() });
+      await batch.commit();
+
+      // Send success response in the format expected by the callable SDK
+      res.status(200).send({ data: { roadmapId: roadmapRef.id } });
+    } catch (error: any) {
+        functions.logger.error("Error in generateRoadmap function:", error);
+        if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+            res.status(403).send({ error: { message: "Unauthorized: Invalid token." } });
+        } else {
+            res.status(500).send({ error: { message: "Failed to generate roadmap. The AI model may have returned an unexpected format or an internal error occurred. Please try again." } });
+        }
     }
-
-
-    const {milestones, ...roadmapDetails} = roadmapData;
-    const roadmapRef = db.collection(`tracks/${userId}/roadmaps`).doc();
-    const batch = db.batch();
-
-    batch.set(roadmapRef, {
-      ...roadmapDetails,
-      track: preferences.careerTrack,
-      level: preferences.experienceLevel,
-      status: "in-progress",
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    milestones.forEach((milestone: any) => {
-      const milestoneRef = roadmapRef.collection("milestones").doc(milestone.id);
-      const milestoneWithStatus = {
-        ...milestone,
-        tasks: milestone.tasks.map((task: any) => ({...task, completed: false})),
-        courses: milestone.courses.map((course: any) => ({...course, completed: false})),
-      };
-      batch.set(milestoneRef, milestoneWithStatus);
-    });
-
-    batch.update(userRef, {
-      lastRoadmapGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    await batch.commit();
-
-    return {roadmapId: roadmapRef.id, roadmapData};
-  } catch (error) {
-    functions.logger.error("Gemini API or Firestore error:", error);
-    throw new functions.https.HttpsError("internal", "Failed to generate roadmap. The AI model may have returned an unexpected format. Please try again.");
-  }
+  });
 });
 
 /**
@@ -299,80 +279,83 @@ export const updateRoadmapStatus = functions.https.onCall(async (data, context) 
   }
 });
 
-export const gradeAnswer = functions.https.onCall(async (data, context) => {
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (!geminiApiKey) {
-    throw new functions.https.HttpsError("failed-precondition", "The GEMINI_API_KEY environment variable is not set.");
-  }
+export const gradeAnswer = functions.https.onRequest((req, res) => {
+    corsHandler(req, res, async () => {
+        try {
+            // Manual Authentication
+            if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+                res.status(403).send({ error: { message: "Unauthorized" } });
+                return;
+            }
+            const idToken = req.headers.authorization.split('Bearer ')[1];
+            await admin.auth().verifyIdToken(idToken);
 
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "The function must be called while authenticated.",
-    );
-  }
+            const geminiApiKey = process.env.GEMINI_API_KEY;
+            if (!geminiApiKey) {
+                functions.logger.error("GEMINI_API_KEY is not set.");
+                res.status(500).send({ error: { message: "Server configuration error: API key missing." } });
+                return;
+            }
 
-  const { question, userAnswer } = data;
-  if (!question || typeof userAnswer !== "string") {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "Missing or invalid arguments: 'question' and 'userAnswer' are required.",
-    );
-  }
-
-  const ai = new GoogleGenAI({apiKey: geminiApiKey});
-
-  const gradingSchema = {
-    type: Type.OBJECT,
-    properties: {
-      correct: {type: Type.BOOLEAN},
-      similarity: {type: Type.NUMBER},
-      explanation: {type: Type.STRING},
-    },
-    required: ["correct", "similarity", "explanation"],
-  };
-
-  let prompt: string;
-  if (question.type === "multiple-choice") {
-    prompt = `
-            You are a quiz grading AI. Evaluate the user's answer for the following multiple-choice question.
-            Question: "${question.text}"
-            Options: ${JSON.stringify(question.options)}
-            Correct Answer is: "${question.correctAnswer}"
-            User's Answer: "${userAnswer}"
-
-            Respond with a JSON object. 
-            - "correct" should be true if the user's answer is correct, false otherwise.
-            - "similarity" should be 1 if correct, 0 if incorrect.
-            - "explanation" should be the pre-defined explanation: "${question.explanation}". If the user is wrong, briefly reiterate why the correct answer is right based on the provided explanation. If the user is correct, simply use the provided explanation.
-        `;
-  } else { // short-answer
-    prompt = `
-            You are a quiz grading AI. Evaluate the user's answer for the following short-answer question based on semantic similarity.
-            The official correct answer is: "${question.correctAnswer}"
-            The user's answer is: "${userAnswer}"
+            const { question, userAnswer } = req.body.data;
+            if (!question || typeof userAnswer !== 'string') {
+                res.status(400).send({ error: { message: "Missing or invalid arguments: 'question' and 'userAnswer' are required." } });
+                return;
+            }
             
-            Respond with a JSON object.
-            - "correct" should be true if the user's answer is semantically similar to the correct answer (a similarity score of 0.75 or higher).
-            - "similarity" should be a float between 0.0 and 1.0 representing the semantic similarity.
-            - "explanation" should be based on the provided explanation: "${question.explanation}". Your explanation should confirm if the user was correct and elaborate based on the provided explanation.
-        `;
-  }
+            const ai = new GoogleGenAI({apiKey: geminiApiKey});
+            const gradingSchema = {
+                type: Type.OBJECT,
+                properties: {
+                    correct: {type: Type.BOOLEAN},
+                    similarity: {type: Type.NUMBER},
+                    explanation: {type: Type.STRING},
+                },
+                required: ["correct", "similarity", "explanation"],
+            };
 
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: gradingSchema,
-      },
+            let prompt: string;
+            if (question.type === "multiple-choice") {
+                prompt = `
+                    You are a quiz grading AI. Evaluate the user's answer for the following multiple-choice question.
+                    Question: "${question.text}"
+                    Options: ${JSON.stringify(question.options)}
+                    Correct Answer is: "${question.correctAnswer}"
+                    User's Answer: "${userAnswer}"
+                    Respond with a JSON object. 
+                    - "correct" should be true if the user's answer is correct, false otherwise.
+                    - "similarity" should be 1 if correct, 0 if incorrect.
+                    - "explanation" should be the pre-defined explanation: "${question.explanation}". If the user is wrong, briefly reiterate why the correct answer is right.
+                `;
+            } else { // short-answer
+                prompt = `
+                    You are a quiz grading AI. Evaluate the user's answer for the following short-answer question based on semantic similarity.
+                    The official correct answer is: "${question.correctAnswer}"
+                    The user's answer is: "${userAnswer}"
+                    Respond with a JSON object.
+                    - "correct" should be true if the user's answer is semantically similar to the correct answer (a similarity score of 0.75 or higher).
+                    - "similarity" should be a float between 0.0 and 1.0 representing the semantic similarity.
+                    - "explanation" should be based on the provided explanation: "${question.explanation}". Confirm if the user was correct and elaborate.
+                `;
+            }
+
+            const response = await ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: prompt,
+                config: { responseMimeType: "application/json", responseSchema: gradingSchema },
+            });
+            const resultData = JSON.parse(response.text);
+
+            res.status(200).send({ data: resultData });
+        } catch (error: any) {
+            functions.logger.error("Error in gradeAnswer function:", error);
+            if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+                res.status(403).send({ error: { message: "Unauthorized: Invalid token." } });
+            } else {
+                res.status(500).send({ error: { message: "Failed to grade answer." } });
+            }
+        }
     });
-    return JSON.parse(response.text);
-  } catch (error) {
-    functions.logger.error("Gemini grading error:", error);
-    throw new functions.https.HttpsError("internal", "Failed to grade answer.");
-  }
 });
 
 
@@ -410,8 +393,6 @@ export const onRoadmapShare = functions.firestore
     // If roadmap is made private, delete it from public collection
     if (!afterData?.isPublic && beforeData?.isPublic) {
       functions.logger.log(`Making roadmap ${roadmapId} private.`);
-      // The `recursiveDelete` function is part of firebase-tools, not the Admin SDK.
-      // We must delete subcollections manually.
       const publicMilestones = await publicRoadmapRef.collection("milestones").get();
       const batch = db.batch();
       publicMilestones.forEach((doc) => batch.delete(doc.ref));
