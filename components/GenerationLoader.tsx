@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, animate } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Logo, CheckCircleIcon, XCircleIcon } from './icons';
 import Spinner from './Spinner';
 
@@ -14,21 +14,6 @@ const generationSteps = [
     "Assembling your personalized roadmap...",
     "Finalizing and saving...",
 ];
-
-const AnimatedCounter: React.FC<{ to: number; initial?: number }> = ({ to, initial = 0 }) => {
-    const [count, setCount] = useState(initial);
-  
-    useEffect(() => {
-        const controls = animate(initial, to, {
-            duration: 2,
-            ease: "easeOut",
-            onUpdate: (value) => setCount(Math.floor(value)),
-        });
-        return () => controls.stop();
-    }, [to, initial]);
-  
-    return <motion.span>{count.toLocaleString()}</motion.span>;
-};
 
 const GenerationLoader: React.FC<{ error: string | null }> = ({ error }) => {
     const [currentStep, setCurrentStep] = useState(0);
@@ -98,17 +83,6 @@ const GenerationLoader: React.FC<{ error: string | null }> = ({ error }) => {
                         </motion.li>
                     ))}
                 </ul>
-            </div>
-            
-            <div className="mt-8 grid grid-cols-2 gap-4 text-xs text-slate-500 w-full max-w-sm bg-slate-100 p-3 rounded-lg">
-                <div className="text-center">
-                    <p className="font-semibold">AI TOKENS USED</p>
-                    <p className="text-lg font-mono text-primary"><AnimatedCounter to={1337420} /></p>
-                </div>
-                 <div className="text-center">
-                    <p className="font-semibold">WEB PAGES SCANNED</p>
-                    <p className="text-lg font-mono text-primary"><AnimatedCounter to={8492} /></p>
-                </div>
             </div>
         </div>
     );
