@@ -9,13 +9,13 @@ import { getAnalytics, Analytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration from the user prompt
 const firebaseConfig = {
-  apiKey: "AIzaSyBwd-07ShO5ndPY5LsETxktMh4InnlHbSc",
-  authDomain: "shyftcut.firebaseapp.com",
-  projectId: "shyftcut",
-  storageBucket: "shyftcut.appspot.com", // Corrected the storage bucket domain
-  messagingSenderId: "730490300919",
-  appId: "1:730490300919:web:3be840377fc1edeba1a6f2",
-  measurementId: "G-30XM8HXYDG"
+  apiKey: "AIzaSyCL3EtP9FtoSDuDlvSBMOv_rbBIZVgI_p0",
+  authDomain: "shyftcutnew.firebaseapp.com",
+  projectId: "shyftcutnew",
+  storageBucket: "shyftcutnew.firebasestorage.app",
+  messagingSenderId: "320083219145",
+  appId: "1:320083219145:web:3060fa286486dc4eef3318",
+  measurementId: "G-5HVZ8Q08D7"
 };
 
 

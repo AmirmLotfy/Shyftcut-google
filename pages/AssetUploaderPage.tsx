@@ -29,7 +29,7 @@ const AssetUploader: React.FC<{ title: string; folder: string }> = ({ title, fol
             reader.onloadend = () => setPreview(reader.result as string);
             reader.readAsDataURL(file);
 
-            // Upload to Firebase Storage
+            // Upload to Firebase Storage with UID prefix for security
             const storageRef = ref(storage, `${folder}/${user.uid}-${Date.now()}-${file.name}`);
             const uploadTask = uploadBytesResumable(storageRef, file);
 

@@ -14,6 +14,7 @@ import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
+import AssetUploaderPage from './pages/AssetUploaderPage';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -38,6 +39,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/forgot-password" element={<PublicOnlyRoute element={<ForgotPasswordPage />} />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            <Route path="/utils/asset-uploader" element={<AssetUploaderPage />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>

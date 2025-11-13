@@ -2,7 +2,7 @@ import React from 'react';
 import Button from '../Button';
 import { ArrowLeftIcon, ArrowRightIcon, PencilIcon } from '../icons';
 import { UserPreferences } from '../../types';
-import Spinner from '../Spinner';
+import GenerationLoader from '../GenerationLoader';
 
 interface StepProps {
     formData: UserPreferences;
@@ -13,7 +13,6 @@ interface StepProps {
     handleBack: () => void;
     loading: boolean;
     error: string | null;
-    progressMessage: string;
 }
 
 const ReviewItem: React.FC<{ label: string; value: string; onEdit: () => void }> = ({ label, value, onEdit }) => (
@@ -29,8 +28,12 @@ const ReviewItem: React.FC<{ label: string; value: string; onEdit: () => void }>
 );
 
 
-const Step6Review: React.FC<StepProps> = ({ formData, name, setName, goToStep, handleSubmit, handleBack, loading, error, progressMessage }) => {
+const Step6Review: React.FC<StepProps> = ({ formData, name, setName, goToStep, handleSubmit, handleBack, loading, error }) => {
     
+    if (loading || error) {
+        return <GenerationLoader error={error} />;
+    }
+
     return (
         <div>
             <h2 className="text-2xl font-bold text-slate-800 mb-1">Review your selections</h2>
@@ -61,23 +64,12 @@ const Step6Review: React.FC<StepProps> = ({ formData, name, setName, goToStep, h
                 </div>
               </div>
               
-            {error && <p className="text-red-600 text-sm mt-4 text-center">{error}</p>}
-            
             <div className="mt-8 flex justify-between items-center">
                 <Button variant="outline" onClick={handleBack} disabled={loading}>
                     <ArrowLeftIcon className="w-5 h-5 mr-2" /> Back
                 </Button>
-                <Button onClick={handleSubmit} disabled={loading || !name} className={!loading && name ? "animate-pulse-glow" : ""}>
-                    {loading ? (
-                        <>
-                            <Spinner size="sm" /> 
-                            <span className="ml-2">{progressMessage}</span>
-                        </>
-                    ) : (
-                        <>
-                            Create My Roadmap <ArrowRightIcon className="w-5 h-5 ml-2" />
-                        </>
-                    )}
+                <Button onClick={handleSubmit} disabled={loading || !name} className="animate-pulse-glow">
+                    Create My Roadmap <ArrowRightIcon className="w-5 h-5 ml-2" />
                 </Button>
             </div>
         </div>

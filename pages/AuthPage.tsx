@@ -64,6 +64,8 @@ const AuthPage: React.FC = () => {
           learningStyles: [],
           resourcePreference: '',
         },
+        subscriptionRole: 'free',
+        trialEndsAt: null,
       });
     }
   };

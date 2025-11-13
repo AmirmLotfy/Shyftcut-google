@@ -2,15 +2,10 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {GoogleGenAI, Type} from "@google/genai";
-import {defineString} from "firebase-functions/params";
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 const db = admin.firestore();
-
-// Define secrets from Google Cloud Secret Manager
-const geminiApiKey = defineString("GEMINI_API_KEY");
-
 
 /**
  * Triggered on new user creation to initialize their profile in Firestore.
@@ -87,6 +82,11 @@ export const checkTrialExpirations = functions.pubsub
  * HTTP-callable function to generate a learning roadmap using Gemini.
  */
 export const generateRoadmap = functions.https.onCall(async (data, context) => {
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey) {
+    throw new functions.https.HttpsError("failed-precondition", "The GEMINI_API_KEY environment variable is not set. Please set it in the Firebase console or using `firebase functions:secrets:set`.");
+  }
+
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "The function must be called while authenticated.");
   }
@@ -117,7 +117,7 @@ export const generateRoadmap = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("invalid-argument", "Missing user preferences.");
   }
 
-  const ai = new GoogleGenAI({apiKey: geminiApiKey.value()});
+  const ai = new GoogleGenAI({apiKey: geminiApiKey});
 
   const prompt = `
       You are an expert career transition advisor. Generate a personalized 12-week learning roadmap for a user with the following profile:
@@ -275,6 +275,11 @@ export const updateRoadmapStatus = functions.https.onCall(async (data, context) 
 });
 
 export const gradeShortAnswer = functions.https.onCall(async (data, context) => {
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey) {
+    throw new functions.https.HttpsError("failed-precondition", "The GEMINI_API_KEY environment variable is not set. Please set it in the Firebase console or using `firebase functions:secrets:set`.");
+  }
+  
   if (!context.auth) {
     throw new functions.https.HttpsError(
       "unauthenticated",
@@ -290,7 +295,7 @@ export const gradeShortAnswer = functions.https.onCall(async (data, context) => 
     );
   }
 
-  const ai = new GoogleGenAI({apiKey: geminiApiKey.value()});
+  const ai = new GoogleGenAI({apiKey: geminiApiKey});
   
   // Since this function doesn't use googleSearch, we can use responseSchema for reliable JSON.
   const gradingSchema = {

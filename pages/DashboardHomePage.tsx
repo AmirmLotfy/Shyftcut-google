@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { collection, query, getDocs, orderBy, where, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { Roadmap } from '../types';
 import Button from '../components/Button';
@@ -23,17 +23,26 @@ const DashboardHomePage: React.FC = () => {
         setStatusUpdateError(null);
         try {
             const roadmapsCol = collection(db, 'tracks', user.uid, 'roadmaps');
-            const statusFilter = showArchived
-                ? where('status', '==', 'archived')
-                : where('status', 'in', ['in-progress', 'completed', 'pending']);
-            
-            const q = query(roadmapsCol, statusFilter, orderBy('createdAt', 'desc'));
+            // Query without status filter to avoid composite index requirement.
+            const q = query(roadmapsCol, orderBy('createdAt', 'desc'));
             const roadmapSnapshot = await getDocs(q);
-            const fetchedRoadmaps = roadmapSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Roadmap));
-            setRoadmaps(fetchedRoadmaps);
+
+            // Perform filtering on the client side.
+            const allRoadmaps = roadmapSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Roadmap));
+            
+            const filteredRoadmaps = showArchived
+                ? allRoadmaps.filter(r => r.status === 'archived')
+                : allRoadmaps.filter(r => r.status !== 'archived');
+
+            setRoadmaps(filteredRoadmaps);
         } catch (error) {
             console.error("Error fetching roadmaps:", error);
-            setStatusUpdateError("Could not load roadmaps. Please try again.");
+            // Check if the error is the index error and provide a more specific message.
+            if (error instanceof Error && error.message.includes("requires an index")) {
+                 setStatusUpdateError("Firestore query failed. Please ensure database indexes are deployed.");
+            } else {
+                 setStatusUpdateError("Could not load roadmaps. Please try again.");
+            }
         } finally {
             setLoading(false);
         }

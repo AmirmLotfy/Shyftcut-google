@@ -1,14 +1,13 @@
-
 import { useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { UserPreferences } from '../types';
-import { functions } from '../services/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { db } from '../services/firebase';
+import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { generateRoadmapFromGemini } from '../services/geminiService';
 
 export const useGenerateRoadmap = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [progressMessage, setProgressMessage] = useState('Generating...');
     const { user, userProfile } = useAuth();
 
     const generateRoadmap = useCallback(async (preferences: UserPreferences) => {
@@ -34,27 +33,46 @@ export const useGenerateRoadmap = () => {
                 throw new Error(errorMsg);
             }
         }
-
-        setProgressMessage('Warming up the AI...');
         
         try {
-            setProgressMessage('Generating your learning path...');
-            // This is now calling the Firebase Cloud Function
-            const generateRoadmapFn = httpsCallable(functions, 'generateRoadmap');
-            const result: any = await generateRoadmapFn({ preferences });
+            const roadmapData = await generateRoadmapFromGemini(preferences);
+            const { milestones, ...roadmapDetails } = roadmapData;
+
+            const userTracksCollection = collection(db, `tracks/${user.uid}/roadmaps`);
+            const roadmapRef = doc(userTracksCollection);
             
-            const { roadmapId } = result.data;
-            if (!roadmapId) {
-                throw new Error("Cloud function did not return a roadmap ID.");
-            }
+            const batch = writeBatch(db);
+
+            batch.set(roadmapRef, {
+                ...roadmapDetails,
+                track: preferences.careerTrack,
+                level: preferences.experienceLevel,
+                status: "in-progress",
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            });
+
+            milestones.forEach((milestone: any) => {
+                const milestoneRef = doc(roadmapRef, 'milestones', milestone.id);
+                const milestoneWithStatus = {
+                    ...milestone,
+                    tasks: milestone.tasks.map((task: any) => ({ ...task, completed: false })),
+                    courses: milestone.courses.map((course: any) => ({ ...course, completed: false })),
+                };
+                batch.set(milestoneRef, milestoneWithStatus);
+            });
             
-            setProgressMessage('All done!');
-            return { roadmapId };
+            const userDocRef = doc(db, 'users', user.uid);
+            batch.update(userDocRef, {
+                lastRoadmapGeneratedAt: serverTimestamp(),
+            });
+
+            await batch.commit();
+            
+            return { roadmapId: roadmapRef.id };
 
         } catch (err: any) {
-            console.error("Error generating roadmap via cloud function:", err);
-            // Firebase callable functions wrap errors, so the message is on err.message
-            // The default message is often not user-friendly, so we'll provide a more helpful one.
+            console.error("Error in generateRoadmap hook:", err);
             const errorMessage = err.message || 'An unknown error occurred while generating the roadmap. Please try again later.';
             setError(errorMessage);
             throw new Error(errorMessage);
@@ -63,5 +81,5 @@ export const useGenerateRoadmap = () => {
         }
     }, [user, userProfile]);
 
-    return { generateRoadmap, loading, error, progressMessage };
+    return { generateRoadmap, loading, error };
 };

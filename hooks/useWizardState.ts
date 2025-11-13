@@ -12,7 +12,7 @@ const WIZARD_STORAGE_KEY = 'shyftcut_wizard_data';
 export const useWizardState = () => {
     const { user, userProfile } = useAuth();
     const navigate = useNavigate();
-    const { generateRoadmap, loading: isGenerating, error: generationError, progressMessage } = useGenerateRoadmap();
+    const { generateRoadmap, loading: isGenerating, error: generationError } = useGenerateRoadmap();
 
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<UserPreferences>(initialWizardData);
@@ -122,7 +122,6 @@ export const useWizardState = () => {
         name,
         loading: isGenerating,
         error,
-        progressMessage,
         setStep,
         setFormData,
         setName,
