@@ -10,7 +10,7 @@ const MasteringSelfLearningPage: React.FC = () => {
     const post = {
         category: 'Learning Science',
         title: 'Mastering the Art of Self-Learning: A Guide to Becoming an Autodidact',
-        imageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1470&q=80',
         author: 'The Shyftcut Team',
         date: 'October 26, 2023',
     };
@@ -20,7 +20,7 @@ const MasteringSelfLearningPage: React.FC = () => {
             <Header />
             <main className="pt-8 pb-16 lg:pt-16 lg:pb-24 bg-white antialiased">
                 <div className="flex justify-between px-4 mx-auto max-w-screen-xl ">
-                    <article className="mx-auto w-full max-w-3xl format format-sm sm:format-base lg:format-lg format-blue">
+                    <article className="mx-auto w-full max-w-3xl">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -35,7 +35,7 @@ const MasteringSelfLearningPage: React.FC = () => {
                             <header className="mb-4 lg:mb-6 not-format">
                                 <address className="flex items-center mb-6 not-italic">
                                     <div className="inline-flex items-center mr-3 text-sm text-gray-900">
-                                        <img className="mr-4 w-16 h-16 rounded-full" src="https://raw.githubusercontent.com/SalahHamza/Final-Project-for-gemini-2024/main/public/logo.png" alt={post.author} />
+                                        <img className="mr-4 w-16 h-16 rounded-full" src="https://images.unsplash.com/photo-1634746709990-23f9a72a583d?auto=format&fit=crop&w=100&q=80" alt={post.author} />
                                         <div>
                                             <a href="#" rel="author" className="text-xl font-bold text-gray-900">{post.author}</a>
                                             <p className="text-base text-gray-500">{post.date}</p>

@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserPreferences } from '../types';
+import { UserPreferences, Question } from '../types';
 
 // The API key is injected from the environment.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -98,8 +98,8 @@ export const generateRoadmapFromGemini = async (preferences: UserPreferences) =>
 };
 
 
-// This function replicates the logic from the `gradeShortAnswer` cloud function.
-export const gradeAnswerFromGemini = async (userAnswer: string, expectedAnswer: string) => {
+// This function now handles both multiple-choice and short-answer questions.
+export const gradeAnswerFromGemini = async (question: Question, userAnswer: string) => {
     const gradingSchema = {
       type: Type.OBJECT,
       properties: {
@@ -110,13 +110,32 @@ export const gradeAnswerFromGemini = async (userAnswer: string, expectedAnswer: 
       required: ["correct", "similarity", "explanation"],
     };
 
-    const prompt = `
-      Please evaluate the user's answer for a quiz question based on semantic similarity.
-      Expected Answer: "${expectedAnswer}"
-      User's Answer: "${userAnswer}"
-      A similarity score of 0.75 or higher should be considered correct.
-      Return a JSON object with your evaluation.
-    `;
+    let prompt: string;
+    if (question.type === 'multiple-choice') {
+        prompt = `
+            You are a quiz grading AI. Evaluate the user's answer for the following multiple-choice question.
+            Question: "${question.text}"
+            Options: ${JSON.stringify(question.options)}
+            Correct Answer is: "${question.correctAnswer}"
+            User's Answer: "${userAnswer}"
+
+            Respond with a JSON object. 
+            - "correct" should be true if the user's answer is correct, false otherwise.
+            - "similarity" should be 1 if correct, 0 if incorrect.
+            - "explanation" should be the pre-defined explanation: "${question.explanation}". If the user is wrong, briefly reiterate why the correct answer is right based on the provided explanation. If the user is correct, simply use the provided explanation.
+        `;
+    } else { // short-answer
+        prompt = `
+            You are a quiz grading AI. Evaluate the user's answer for the following short-answer question based on semantic similarity.
+            The official correct answer is: "${question.correctAnswer}"
+            The user's answer is: "${userAnswer}"
+            
+            Respond with a JSON object.
+            - "correct" should be true if the user's answer is semantically similar to the correct answer (a similarity score of 0.75 or higher).
+            - "similarity" should be a float between 0.0 and 1.0 representing the semantic similarity.
+            - "explanation" should be based on the provided explanation: "${question.explanation}". Your explanation should confirm if the user was correct and elaborate based on the provided explanation.
+        `;
+    }
 
     try {
         const response = await ai.models.generateContent({

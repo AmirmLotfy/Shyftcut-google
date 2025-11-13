@@ -18,9 +18,9 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import AssetUploaderPage from './pages/AssetUploaderPage';
 import PublicRoadmapPage from './pages/PublicRoadmapPage';
-import MasteringSelfLearningPage from './pages/blog/MasteringSelfLearningPage';
-import TechCareerChangePage from './pages/blog/TechCareerChangePage';
-import AIInYourCareerPage from './pages/blog/AIInYourCareerPage';
+import BlogIndexPage from './pages/BlogIndexPage';
+import BlogPostPage from './pages/BlogPostPage';
+
 
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -50,9 +50,8 @@ const AppRoutes: React.FC = () => {
             <Route path="/public/roadmap/:roadmapId" element={<PublicRoadmapPage />} />
 
             {/* Blog Routes */}
-            <Route path="/blog/mastering-self-learning" element={<MasteringSelfLearningPage />} />
-            <Route path="/blog/tech-career-change" element={<TechCareerChangePage />} />
-            <Route path="/blog/ai-in-your-career" element={<AIInYourCareerPage />} />
+            <Route path="/blog" element={<BlogIndexPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>

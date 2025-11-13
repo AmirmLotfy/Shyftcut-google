@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { gradeAnswerFromGemini } from '../services/geminiService';
+import { Question } from '../types';
 
 interface GradingResult {
     correct: boolean;
@@ -11,11 +12,11 @@ export const useAnswerGrading = () => {
     const [isGrading, setIsGrading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const gradeShortAnswer = useCallback(async (userAnswer: string, expectedAnswer: string): Promise<GradingResult | null> => {
+    const gradeAnswer = useCallback(async (question: Question, userAnswer: string): Promise<GradingResult | null> => {
         setIsGrading(true);
         setError(null);
         try {
-            const result = await gradeAnswerFromGemini(userAnswer, expectedAnswer);
+            const result = await gradeAnswerFromGemini(question, userAnswer);
             return result as GradingResult;
         } catch (e: any) {
             console.error("Error calling grading service:", e);
@@ -26,5 +27,5 @@ export const useAnswerGrading = () => {
         }
     }, []);
 
-    return { isGrading, error, gradeShortAnswer };
+    return { isGrading, error, gradeAnswer };
 };

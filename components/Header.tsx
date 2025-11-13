@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
   Logo, MenuIcon, XIcon, SparklesIcon, CurrencyDollarIcon,
@@ -208,6 +208,8 @@ const Header: React.FC = () => {
   const { user, userProfile, loading } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const isBlogPage = location.pathname.startsWith('/blog');
 
   const navLinks = [
     { name: 'Features', href: '/#features' },
@@ -239,19 +241,19 @@ const Header: React.FC = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white/70 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-200/80"
+        className={isBlogPage ? "bg-slate-900/80 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-800" : "bg-white/70 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-200/80"}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <Link to="/" className="flex-shrink-0">
-              <Logo className="h-10 w-auto text-slate-900" />
+              <Logo className="h-10 w-auto" />
             </Link>
             <nav className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.name}
                   to={link.href}
-                  className={({isActive}) => `text-base font-medium transition-colors ${isActive ? 'text-primary' : 'text-slate-500 hover:text-primary'}`}
+                  className={({isActive}) => `text-base font-medium transition-colors ${isActive ? 'text-primary' : isBlogPage ? 'text-slate-300 hover:text-primary' : 'text-slate-500 hover:text-primary'}`}
                 >
                   {link.name}
                 </NavLink>
@@ -304,7 +306,7 @@ const Header: React.FC = () => {
                     </div>
                   ) : (
                     <>
-                        <Link to="/auth" className="text-base font-medium text-slate-500 hover:text-primary transition-colors">
+                        <Link to="/auth" className={`text-base font-medium hover:text-primary transition-colors ${isBlogPage ? 'text-slate-300' : 'text-slate-500'}`}>
                             Sign In
                         </Link>
                         <Button onClick={() => navigate('/auth')}>Start for Free</Button>
@@ -314,7 +316,7 @@ const Header: React.FC = () => {
               <div className="md:hidden">
                 <button
                   onClick={() => setIsMenuOpen(true)}
-                  className="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-primary hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+                  className={`inline-flex items-center justify-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary ${isBlogPage ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100'}`}
                   aria-label="Open main menu"
                 >
                   <MenuIcon className="h-6 w-6" />

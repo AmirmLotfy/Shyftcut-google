@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from './Confetti';
@@ -264,18 +265,20 @@ const TicTacToe: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="mt-4 p-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-l-4 border-primary rounded-lg text-center shadow-inner"
+                className="mt-4 p-2 pl-3 bg-primary-50 border-l-4 border-primary rounded-lg shadow-inner"
             >
-                <div className="flex items-center justify-center">
-                    <SparklesIcon className="w-6 h-6 text-primary mr-3 flex-shrink-0" />
-                    <h4 className="font-bold text-slate-800">AI Challenge: Victory Unlocks a Prize!</h4>
+                <div className="flex items-start">
+                    <SparklesIcon className="w-5 h-5 text-primary mr-2 flex-shrink-0" />
+                    <div>
+                        <h4 className="font-bold text-sm text-slate-800">AI Challenge: Victory Unlocks a Prize!</h4>
+                        <p className="text-sm text-slate-600">
+                            Outsmart our AI to win an exclusive <strong className="font-semibold text-primary">50% discount</strong> on 3 months of Shyftcut Pro.
+                        </p>
+                    </div>
                 </div>
-                <p className="mt-2 text-sm text-slate-600">
-                    Outsmart our AI to win an exclusive <strong className="font-semibold text-primary">50% discount</strong> on 3 months of Shyftcut Pro.
-                </p>
             </motion.div>
 
-            <div className="my-4">
+            <div className="my-2">
                 <GameStatus status={status} winner={winnerInfo.winner} />
             </div>
 
@@ -297,7 +300,7 @@ const TicTacToe: React.FC = () => {
                 </AnimatePresence>
             </div>
             
-            <div className="mt-6 flex justify-center">
+            <div className="mt-2 flex justify-center">
                 <Button variant="ghost" onClick={handleReset} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100">
                     <ArrowPathIcon className="w-5 h-5 mr-2" /> Reset Game
                 </Button>

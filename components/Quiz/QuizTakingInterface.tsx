@@ -23,10 +23,11 @@ const QuizTakingInterface: React.FC<QuizTakingInterfaceProps> = ({ quiz, roadmap
     const [finalResult, setFinalResult] = useState<Omit<UserAnswer, 'questionText'>[] | null>(null);
 
     const { saveQuizResult, loading: isSaving } = useQuizProgress(roadmapId, milestoneId);
-    const { gradeShortAnswer, isGrading } = useAnswerGrading();
+    const { gradeAnswer, isGrading } = useAnswerGrading();
 
-    const currentQuestion = quiz.questions[currentQuestionIndex];
-    const totalQuestions = quiz.questions.length;
+    const { questions, id: quizId, title: quizTitle } = quiz;
+    const currentQuestion = questions[currentQuestionIndex];
+    const totalQuestions = questions.length;
 
     const handleAnswerSelect = (questionId: string, answer: string) => {
         setUserAnswers(prev => new Map(prev).set(questionId, answer));
@@ -51,18 +52,20 @@ const QuizTakingInterface: React.FC<QuizTakingInterfaceProps> = ({ quiz, roadmap
         let score = 0;
         const gradedAnswers: Omit<UserAnswer, 'questionText'>[] = [];
 
-        for (const question of quiz.questions) {
+        for (const question of questions) {
             const userAnswer = userAnswers.get(question.id) || "";
             let isCorrect = false;
-            let explanation = question.explanation;
+            let explanation = question.explanation; // Default explanation
 
-            if (question.type === 'multiple-choice') {
-                isCorrect = userAnswer === question.correctAnswer;
-            } else if (question.type === 'short-answer') {
-                const gradingResult = await gradeShortAnswer(userAnswer, question.correctAnswer);
-                if (gradingResult) {
-                    isCorrect = gradingResult.correct;
-                    explanation = gradingResult.explanation;
+            const gradingResult = await gradeAnswer(question, userAnswer);
+            
+            if (gradingResult) {
+                isCorrect = gradingResult.correct;
+                explanation = gradingResult.explanation;
+            } else {
+                // Fallback to simple check if AI fails
+                if (question.type === 'multiple-choice') {
+                    isCorrect = userAnswer === question.correctAnswer;
                 }
             }
 
@@ -82,19 +85,19 @@ const QuizTakingInterface: React.FC<QuizTakingInterfaceProps> = ({ quiz, roadmap
         setFinalResult(gradedAnswers);
 
         await saveQuizResult({
-            quizId: quiz.id,
-            quizTitle: quiz.title,
+            quizId: quizId,
+            quizTitle: quizTitle,
             milestoneId: milestoneId,
             score,
             totalQuestions,
             percentage: Math.round((score / totalQuestions) * 100),
             passed: score / totalQuestions >= 0.7,
             timeSpent: Math.round((Date.now() - startTime) / 1000),
-            answers: gradedAnswers.map(ans => ({...ans, questionText: quiz.questions.find(q=>q.id === ans.questionId)!.text }))
+            answers: gradedAnswers.map(ans => ({...ans, questionText: questions.find(q=>q.id === ans.questionId)!.text }))
         });
 
         setView('results');
-    }, [quiz, userAnswers, gradeShortAnswer, saveQuizResult, milestoneId, startTime]);
+    }, [questions, quizId, quizTitle, userAnswers, gradeAnswer, saveQuizResult, milestoneId, startTime, totalQuestions]);
     
     const isLoading = isGrading || isSaving;
 
