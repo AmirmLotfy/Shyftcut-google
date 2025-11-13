@@ -26,22 +26,29 @@ const Sidebar: React.FC = () => {
         { name: 'Settings', href: '/settings' },
     ];
 
+    const userInitials = userProfile?.name
+        ?.split(' ')
+        .map((n) => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase() || '..';
+
     return (
-        <aside className="w-64 bg-white/60 backdrop-blur-lg border-r border-slate-200/80 flex-col hidden lg:flex">
-            <div className="h-20 flex items-center px-6 border-b border-slate-200/80">
-                <Logo className="h-8 w-auto text-slate-900" />
+        <aside className="w-72 bg-white border-r border-gray-100 flex-col hidden lg:flex">
+            <div className="h-24 flex items-center px-8">
+                <Logo className="h-9 w-auto text-slate-900" />
             </div>
-            <nav className="flex-1 px-4 py-6 space-y-1">
+            <nav className="flex-1 px-6 py-4 space-y-2">
                 {navItems.map(item => (
                      <NavLink
                         key={item.name}
                         to={item.href}
                         end={item.href === '/dashboard'}
                         className={({ isActive }) =>
-                          `flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                          `flex items-center px-4 py-3 text-base rounded-xl transition-colors duration-200 ${
                             isActive
-                              ? 'bg-primary-500 text-white shadow'
-                              : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+                              ? 'bg-primary-50 text-primary font-semibold'
+                              : 'text-slate-600 hover:bg-gray-100 hover:text-slate-900'
                           }`
                         }
                       >
@@ -49,12 +56,17 @@ const Sidebar: React.FC = () => {
                     </NavLink>
                 ))}
             </nav>
-            <div className="p-4 border-t border-slate-200/80">
-                <div className="text-sm">
-                    <div className="font-semibold text-slate-800 truncate">{userProfile?.name}</div>
-                    <div className="text-slate-500 truncate">{userProfile?.email}</div>
+            <div className="p-6 border-t border-gray-100">
+                 <div className="flex items-center gap-4">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        {userInitials}
+                    </div>
+                    <div className="text-sm overflow-hidden">
+                        <div className="font-semibold text-slate-800 truncate">{userProfile?.name}</div>
+                        <div className="text-slate-500 truncate">{userProfile?.email}</div>
+                    </div>
                 </div>
-                <Button onClick={handleLogout} variant="outline" size="sm" className="w-full mt-4">
+                <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full mt-4 !justify-start text-slate-500 hover:!bg-gray-100">
                     Log Out
                 </Button>
             </div>
@@ -72,16 +84,16 @@ const DashboardLayout: React.FC = () => {
   }
   
   return (
-    <div className="flex h-screen bg-slate-100 font-sans">
+    <div className="flex h-screen bg-gray-50 font-sans">
       <Sidebar />
       <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
         <motion.div 
             key={location.pathname}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="p-4 sm:p-6 lg:p-8"
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            className="p-4 sm:p-6 lg:p-10"
         >
             <Outlet />
         </motion.div>

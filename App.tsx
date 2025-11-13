@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -15,6 +16,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import AssetUploaderPage from './pages/AssetUploaderPage';
+import PublicRoadmapPage from './pages/PublicRoadmapPage';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -40,6 +42,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
             <Route path="/utils/asset-uploader" element={<AssetUploaderPage />} />
+            <Route path="/public/roadmap/:roadmapId" element={<PublicRoadmapPage />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>

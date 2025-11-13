@@ -1,4 +1,5 @@
 
+
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {GoogleGenAI, Type} from "@google/genai";
@@ -329,6 +330,103 @@ export const gradeShortAnswer = functions.https.onCall(async (data, context) => 
   } catch (error) {
     functions.logger.error("Gemini grading error:", error);
     throw new functions.https.HttpsError("internal", "Failed to grade answer.");
+  }
+});
+
+/**
+ * Firestore trigger to copy a roadmap to a public collection when it's shared.
+ */
+export const onRoadmapShare = functions.firestore
+  .document("tracks/{userId}/roadmaps/{roadmapId}")
+  .onWrite(async (change, context) => {
+    const {roadmapId} = context.params;
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+
+    const publicRoadmapRef = db.collection("publicRoadmaps").doc(roadmapId);
+
+    // If roadmap is made public, copy it and its milestones
+    if (afterData?.isPublic && !beforeData?.isPublic) {
+      functions.logger.log(`Making roadmap ${roadmapId} public.`);
+
+      const milestonesSnapshot = await change.after.ref.collection("milestones").get();
+      const batch = db.batch();
+
+      // Copy roadmap data, excluding sensitive or user-specific fields
+      const {createdAt, updatedAt, status, ...publicData} = afterData;
+      batch.set(publicRoadmapRef, publicData);
+
+      milestonesSnapshot.forEach((doc) => {
+        const publicMilestoneRef = publicRoadmapRef.collection("milestones").doc(doc.id);
+        batch.set(publicMilestoneRef, doc.data());
+      });
+
+      return batch.commit();
+    }
+
+    // If roadmap is made private, delete it from public collection
+    if (!afterData?.isPublic && beforeData?.isPublic) {
+      functions.logger.log(`Making roadmap ${roadmapId} private.`);
+      // The `recursiveDelete` function is part of firebase-tools, not the Admin SDK.
+      // We must delete subcollections manually.
+      const publicMilestones = await publicRoadmapRef.collection("milestones").get();
+      const batch = db.batch();
+      publicMilestones.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+
+      return publicRoadmapRef.delete();
+    }
+
+    // If a public roadmap is updated, re-sync the public copy
+    if (afterData?.isPublic && beforeData?.isPublic) {
+      functions.logger.log(`Updating public roadmap ${roadmapId}.`);
+      const {createdAt, updatedAt, status, ...publicData} = afterData;
+      return publicRoadmapRef.update(publicData);
+    }
+
+    return null;
+  });
+
+export const deleteRoadmap = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "The function must be called while authenticated.",
+    );
+  }
+
+  const userId = context.auth.uid;
+  const { roadmapId } = data;
+
+  if (!roadmapId || typeof roadmapId !== "string") {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "A valid roadmap ID is required.",
+    );
+  }
+
+  const roadmapRef = db.collection(`tracks/${userId}/roadmaps`).doc(roadmapId);
+  const publicRoadmapRef = db.collection("publicRoadmaps").doc(roadmapId);
+
+  try {
+    // Use recursiveDelete to remove the roadmap and all its subcollections
+    functions.logger.log(`User ${userId} is deleting roadmap ${roadmapId}`);
+    await admin.firestore().recursiveDelete(roadmapRef);
+
+    // Also delete the public version if it exists
+    const publicDoc = await publicRoadmapRef.get();
+    if (publicDoc.exists) {
+      functions.logger.log(`Deleting public roadmap ${roadmapId}`);
+      await admin.firestore().recursiveDelete(publicRoadmapRef);
+    }
+
+    return { success: true, message: "Roadmap deleted successfully." };
+  } catch (error) {
+    functions.logger.error(`Error deleting roadmap ${roadmapId} for user ${userId}:`, error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to delete roadmap.",
+    );
   }
 });
 

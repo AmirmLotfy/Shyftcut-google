@@ -10,7 +10,7 @@ const navItems = [
 
 const DashboardMobileNav: React.FC = () => {
     return (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200/80 shadow-t-lg z-40">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-t-lg z-40">
             <div className="flex justify-around h-16">
                 {navItems.map(item => (
                     <NavLink

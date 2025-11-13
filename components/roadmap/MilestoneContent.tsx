@@ -5,66 +5,61 @@ import TaskList from './TaskList';
 import CourseList from './CourseList';
 import SuccessCriteria from './SuccessCriteria';
 import QuizSelector from '../Quiz/QuizSelector';
-import Button from '../Button';
+import { motion } from 'framer-motion';
 
 interface MilestoneContentProps {
     milestone: Milestone;
     roadmapId: string;
     onUpdateTask: (milestoneId: string, taskId: string, completed: boolean) => void;
     onUpdateCourse: (milestoneId: string, courseId: string, completed: boolean) => void;
-    onMarkComplete: () => void;
-    isComplete: boolean;
 }
 
-const MilestoneContent: React.FC<MilestoneContentProps> = ({ milestone, roadmapId, onUpdateTask, onUpdateCourse, onMarkComplete, isComplete }) => {
+const Section: React.FC<{title: string; children: React.ReactNode}> = ({ title, children }) => (
+    <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+    >
+        <h3 className="text-2xl font-bold text-gray-800 pb-2 mb-6 border-b border-gray-200">{title}</h3>
+        {children}
+    </motion.section>
+);
+
+
+const MilestoneContent: React.FC<MilestoneContentProps> = ({ milestone, roadmapId, onUpdateTask, onUpdateCourse }) => {
     return (
-        <div className="space-y-8">
+        <div className="space-y-12">
             <div>
-                <span className="text-sm font-semibold text-primary uppercase">Week {milestone.week} &bull; {milestone.durationHours} Hours</span>
-                <h2 className="mt-1 text-3xl font-bold text-gray-800">{milestone.title}</h2>
-                <p className="mt-2 text-lg text-gray-600">{milestone.description}</p>
+                <span className="text-base font-semibold text-primary uppercase tracking-wider">Week {milestone.week} &bull; {milestone.durationHours} Hours</span>
+                <h2 className="mt-2 text-5xl font-extrabold text-gray-900">{milestone.title}</h2>
+                <p className="mt-4 text-xl text-gray-600 max-w-3xl">{milestone.description}</p>
             </div>
             
-             <div className="mt-6">
-                <Button 
-                    onClick={onMarkComplete}
-                    disabled={isComplete}
-                    className={`w-full transition-colors ${isComplete ? '!bg-green-500 hover:!bg-green-600' : ''}`}
-                    size="lg"
-                >
-                    {isComplete ? 'Milestone Complete!' : 'Mark All as Complete'}
-                </Button>
-            </div>
-
-            <section>
-                <h3 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Actionable Tasks</h3>
+            <Section title="Actionable Tasks">
                 <TaskList 
                     tasks={milestone.tasks} 
                     onToggle={(taskId, completed) => onUpdateTask(milestone.id, taskId, completed)}
                 />
-            </section>
+            </Section>
             
-            <section>
-                <h3 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Recommended Courses & Resources</h3>
+            <Section title="Recommended Courses & Resources">
                  <CourseList 
                     courses={milestone.courses} 
                     onToggle={(courseId, completed) => onUpdateCourse(milestone.id, courseId, completed)}
                 />
-            </section>
+            </Section>
 
-            <section>
-                <h3 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Test Your Knowledge</h3>
+            <Section title="Test Your Knowledge">
                  <QuizSelector
                     quizzes={milestone.quizzes}
                     milestoneId={milestone.id}
                     roadmapId={roadmapId}
                  />
-            </section>
+            </Section>
 
-            <section>
-                <h3 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Success Criteria</h3>
+            <Section title="Success Criteria">
                 <SuccessCriteria criteria={milestone.successCriteria} />
-            </section>
+            </Section>
         </div>
     );
 };

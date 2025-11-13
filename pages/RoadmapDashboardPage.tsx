@@ -5,7 +5,9 @@ import Spinner from '../components/Spinner';
 import { ArrowLeftIcon } from '../components/icons';
 import { useAuth } from '../hooks/useAuth';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db, functions } from '../services/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { AnimatePresence } from 'framer-motion';
 
 import RoadmapSidebar from '../components/roadmap/RoadmapSidebar';
 import RoadmapHeader from '../components/roadmap/RoadmapHeader';
@@ -13,6 +15,9 @@ import MilestoneContent from '../components/roadmap/MilestoneContent';
 import PomodoroTimer from '../components/roadmap/PomodoroTimer';
 import MobileBottomNav from '../components/roadmap/MobileBottomNav';
 import MobileRoadmapHeader from '../components/roadmap/MobileRoadmapHeader';
+import ShareModal from '../components/ShareModal';
+import EditRoadmapModal from '../components/EditRoadmapModal';
+
 
 const RoadmapDashboardPage: React.FC = () => {
     const { roadmapId } = useParams<{ roadmapId: string }>();
@@ -22,9 +27,12 @@ const RoadmapDashboardPage: React.FC = () => {
     
     const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
     const [isArchiving, setIsArchiving] = useState(false);
-    const [archiveError, setArchiveError] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    // Effect to select the first milestone once data is loaded
+
     React.useEffect(() => {
         if (!selectedMilestoneId && milestones.length > 0) {
             setSelectedMilestoneId(milestones[0].id);
@@ -57,7 +65,7 @@ const RoadmapDashboardPage: React.FC = () => {
             return;
         }
         setIsArchiving(true);
-        setArchiveError(null);
+        setActionError(null);
         try {
             const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
             await updateDoc(roadmapRef, {
@@ -67,9 +75,37 @@ const RoadmapDashboardPage: React.FC = () => {
             navigate('/dashboard');
         } catch (e) {
             console.error("Failed to archive roadmap:", e);
-            setArchiveError("Could not archive roadmap. Please try again.");
+            setActionError("Could not archive roadmap. Please try again.");
         } finally {
             setIsArchiving(false);
+        }
+    };
+
+    const handleSaveEdit = async (updatedData: { title: string; description: string }) => {
+        if (!roadmapId || !user) return;
+        const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
+        await updateDoc(roadmapRef, {
+            ...updatedData,
+            updatedAt: serverTimestamp(),
+        });
+    };
+
+    const handleDelete = async () => {
+        if (!roadmapId || !user) return;
+        if (!window.confirm("Are you sure you want to permanently delete this roadmap? This action CANNOT be undone.")) {
+            return;
+        }
+        setIsDeleting(true);
+        setActionError(null);
+        try {
+            const deleteRoadmapFunc = httpsCallable(functions, 'deleteRoadmap');
+            await deleteRoadmapFunc({ roadmapId });
+            navigate('/dashboard');
+        } catch (e) {
+            console.error("Failed to delete roadmap:", e);
+            setActionError("Could not delete roadmap. Please try again later.");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -92,7 +128,7 @@ const RoadmapDashboardPage: React.FC = () => {
     }
     
     if (!roadmap || !selectedMilestone) {
-        return null; // or a more specific "not found" message
+        return null;
     }
     
     const handleNextMilestone = () => {
@@ -108,27 +144,9 @@ const RoadmapDashboardPage: React.FC = () => {
             setSelectedMilestoneId(milestones[currentIndex - 1].id);
         }
     };
-    
-    const handleMarkMilestoneComplete = async () => {
-        if (!selectedMilestone) return;
-        const updatePromises: Promise<void>[] = [];
-        selectedMilestone.tasks.forEach(task => {
-            if (!task.completed) {
-                updatePromises.push(updateTaskCompletion(selectedMilestone.id, task.id, true));
-            }
-        });
-        selectedMilestone.courses.forEach(course => {
-            if (!course.completed) {
-                updatePromises.push(updateCourseCompletion(selectedMilestone.id, course.id, true));
-            }
-        });
-        await Promise.all(updatePromises);
-    };
-    
-    const isCurrentMilestoneComplete = milestoneCompletionStatus.get(selectedMilestone.id) || false;
-
 
     return (
+        <>
         <div className="flex h-screen bg-gray-50 font-sans">
             <RoadmapSidebar 
                 roadmap={roadmap} 
@@ -145,28 +163,29 @@ const RoadmapDashboardPage: React.FC = () => {
                     onSelectMilestone={setSelectedMilestoneId}
                 />
                 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 pb-24 lg:pb-8">
                     <RoadmapHeader 
                         roadmap={roadmap} 
                         milestones={milestones} 
                         completionStatus={milestoneCompletionStatus} 
                         onArchive={handleArchive}
-                        isArchiving={isArchiving}
+                        onShare={() => setIsShareModalOpen(true)}
+                        onEdit={() => setIsEditModalOpen(true)}
+                        onDelete={handleDelete}
+                        isArchiving={isArchiving || isDeleting}
                     />
-                    {archiveError && <p className="text-center text-red-500 my-4">{archiveError}</p>}
+                    {actionError && <p className="text-center text-red-500 my-4">{actionError}</p>}
                     
-                    <div className="mt-8 lg:grid lg:grid-cols-3 lg:gap-8">
-                        <div className="lg-col-span-2">
+                    <div className="mt-8 lg:grid lg:grid-cols-12 lg:gap-8">
+                        <div className="lg:col-span-8">
                              <MilestoneContent 
                                 milestone={selectedMilestone}
                                 roadmapId={roadmapId!}
                                 onUpdateTask={updateTaskCompletion}
                                 onUpdateCourse={updateCourseCompletion}
-                                onMarkComplete={handleMarkMilestoneComplete}
-                                isComplete={isCurrentMilestoneComplete}
                             />
                         </div>
-                        <div className="mt-8 lg:mt-0">
+                        <div className="mt-8 lg:mt-0 lg:col-span-4">
                             <PomodoroTimer onSessionComplete={(minutes) => updateTimeSpent(selectedMilestoneId!, minutes)} />
                         </div>
                     </div>
@@ -176,11 +195,26 @@ const RoadmapDashboardPage: React.FC = () => {
                     onNext={handleNextMilestone}
                     isPrevDisabled={milestones.findIndex(m => m.id === selectedMilestoneId) === 0}
                     isNextDisabled={milestones.findIndex(m => m.id === selectedMilestoneId) === milestones.length - 1}
-                    onMarkComplete={handleMarkMilestoneComplete}
-                    isComplete={isCurrentMilestoneComplete}
                 />
             </main>
         </div>
+        <AnimatePresence>
+            {isShareModalOpen && user && (
+                 <ShareModal 
+                    roadmap={roadmap} 
+                    user={user}
+                    onClose={() => setIsShareModalOpen(false)} 
+                />
+            )}
+            {isEditModalOpen && user && roadmap && (
+                 <EditRoadmapModal 
+                    roadmap={roadmap} 
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSave={handleSaveEdit}
+                />
+            )}
+        </AnimatePresence>
+        </>
     );
 };
 

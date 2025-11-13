@@ -1,4 +1,5 @@
 
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -32,6 +33,7 @@ export interface Roadmap {
   status: 'in-progress' | 'completed' | 'pending' | 'archived';
   totalHours: number;
   estimatedCompletion: string;
+  isPublic?: boolean;
   // Milestones are now a subcollection
 }
 

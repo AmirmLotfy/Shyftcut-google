@@ -20,22 +20,25 @@ const QuizCard: React.FC<{
     onStart: () => void;
 }> = ({ quiz, latestResult, onStart }) => {
     const getStatusStyles = () => {
-        if (!latestResult) return { bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-200', label: 'Not Attempted' };
-        if (latestResult.passed) return { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200', label: 'Passed' };
-        return { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300', label: 'Try Again' };
+        if (!latestResult) return { border: 'border-l-slate-300', text: 'text-slate-800', label: 'Not Attempted' };
+        if (latestResult.passed) return { border: 'border-l-green-500', text: 'text-green-800', label: 'Passed' };
+        return { border: 'border-l-yellow-500', text: 'text-yellow-800', label: 'Try Again' };
     };
 
-    const { bg, text, border, label } = getStatusStyles();
+    const { border, text, label } = getStatusStyles();
 
     return (
         <motion.div 
-            className={`p-4 rounded-lg border flex flex-col justify-between ${bg} ${border}`}
-            whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)"}}
+            className={`p-5 rounded-2xl border border-gray-200 border-l-4 bg-white flex flex-col justify-between ${border}`}
+            whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -2px rgba(0,0,0,0.04)"}}
         >
             <div>
                 <div className="flex justify-between items-center">
-                    <h4 className={`font-bold ${text}`}>{quiz.title}</h4>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${bg} ${text}`}>{label}</span>
+                    <h4 className="font-bold text-gray-800">{quiz.title}</h4>
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full bg-opacity-20 ${
+                        !latestResult ? 'bg-slate-200 text-slate-700' :
+                        latestResult.passed ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
+                    }`}>{label}</span>
                 </div>
                 <div className="flex items-center space-x-4 mt-2 text-sm text-slate-600">
                     <span className="flex items-center">
@@ -48,7 +51,7 @@ const QuizCard: React.FC<{
                     </span>
                 </div>
                 {latestResult && (
-                    <p className="text-sm font-semibold text-slate-700 mt-2">Best Score: {latestResult.percentage}%</p>
+                    <p className={`text-sm font-bold mt-2 ${text}`}>Best Score: {latestResult.percentage}%</p>
                 )}
             </div>
             <Button onClick={onStart} className="w-full mt-4" variant={latestResult?.passed ? "outline" : "primary"}>
@@ -90,7 +93,7 @@ const QuizSelector: React.FC<QuizSelectorProps> = ({ quizzes, milestoneId, roadm
     }
 
     return (
-        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-6">
             {quizzes.map(quiz => (
                 <QuizCard 
                     key={quiz.id} 

@@ -18,7 +18,8 @@
     "@lottiefiles/dotlottie-react": "^1.7.1",
     "firebase-functions": "^6.6.0",
     "firebase-admin": "^13.5.0",
-    "stripe": "^19.2.0"
+    "stripe": "^19.2.0",
+    "lucide-react": "^0.407.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

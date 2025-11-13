@@ -8,6 +8,19 @@ import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import { useNavigate } from 'react-router-dom';
 
+const FormRow: React.FC<{ children: React.ReactNode, htmlFor?: string, label: string, description?: string }> = ({ children, label, description, htmlFor }) => (
+    <div className="grid md:grid-cols-3 gap-4 items-start">
+        <div className="md:col-span-1">
+            <label htmlFor={htmlFor} className="block text-base font-semibold text-gray-800">{label}</label>
+            {description && <p className="text-sm text-slate-500 mt-1">{description}</p>}
+        </div>
+        <div className="md:col-span-2">
+            {children}
+        </div>
+    </div>
+);
+
+
 const SettingsPage: React.FC = () => {
   const { user, userProfile } = useAuth();
   const navigate = useNavigate();
@@ -81,7 +94,7 @@ const SettingsPage: React.FC = () => {
       return;
     }
 
-    if (!window.confirm("Are you absolutely sure you want to delete your account? This will permanently erase your profile and authentication details. This action CANNOT be undone.")) {
+    if (!window.confirm("Are you absolutely sure you want to delete your account? This will permanently erase your profile and all associated data. This action CANNOT be undone.")) {
         return;
     }
 
@@ -99,14 +112,10 @@ const SettingsPage: React.FC = () => {
       await reauthenticateWithCredential(user, credential);
 
       const userDocRef = doc(db, 'users', user.uid);
-      // NOTE: This client-side operation only deletes the main user profile document.
-      // All associated roadmaps and progress will be orphaned but inaccessible.
-      // A complete data wipe would require a Cloud Function.
+      // A more robust solution would use a Cloud Function to recursively delete subcollections.
       await deleteDoc(userDocRef);
 
       await deleteUser(user);
-      
-      // Since deleteUser signs the user out, we should navigate them away.
       navigate('/');
       
     } catch (error: any) {
@@ -124,127 +133,99 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800">Settings</h1>
+      <h1 className="text-4xl font-bold text-gray-900">Settings</h1>
+      <p className="mt-2 text-lg text-slate-500">Manage your profile, subscription, and account settings.</p>
       
-      <div className="mt-8 max-w-2xl">
-        {/* Profile Information */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold text-gray-700">Profile Information</h2>
-          <form onSubmit={handleNameUpdate} className="mt-4 space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={user?.email || ''}
-                disabled
-                className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-              />
-            </div>
-            {nameError && <p className="text-sm text-red-600">{nameError}</p>}
-            {nameMessage && <p className="text-sm text-green-600">{nameMessage}</p>}
-            <div className="flex justify-end">
-                <Button type="submit" disabled={nameLoading || name === userProfile?.name}>
-                    {nameLoading ? <Spinner size="sm" /> : 'Save Changes'}
-                </Button>
-            </div>
-          </form>
-        </div>
-        
-        {/* Subscription Management */}
-        <div className="bg-white p-6 rounded-lg shadow mt-8">
-            <h2 className="text-xl font-semibold text-gray-700">Subscription</h2>
-            <div className="mt-4 space-y-4">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Current Plan</p>
-                        <p className="text-lg font-semibold text-gray-800 capitalize">{userProfile?.subscriptionRole || 'Free'}</p>
-                    </div>
-                    {userProfile?.subscriptionRole === 'free' && (
-                        <Button variant="outline" onClick={() => navigate('/pricing')}>
-                            Upgrade Plan
-                        </Button>
-                    )}
+      <div className="mt-10 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-4xl">
+        {/* Profile Section */}
+        <section>
+            <h2 className="text-2xl font-bold text-gray-800">Profile</h2>
+            <p className="text-slate-500 text-sm mt-1">Update your personal details.</p>
+            <form onSubmit={handleNameUpdate} className="mt-6 space-y-6">
+                <FormRow label="Email" htmlFor="email">
+                     <input type="email" id="email" value={user?.email || ''} disabled className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg shadow-sm sm:text-sm cursor-not-allowed" />
+                </FormRow>
+                <FormRow label="Full Name" htmlFor="name">
+                    <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary sm:text-sm" />
+                </FormRow>
+                 <div className="flex justify-end items-center gap-4">
+                    {nameError && <p className="text-sm text-red-600">{nameError}</p>}
+                    {nameMessage && <p className="text-sm text-green-600">{nameMessage}</p>}
+                    <Button type="submit" disabled={nameLoading || name === userProfile?.name}>
+                        {nameLoading ? <Spinner size="sm" /> : 'Save Changes'}
+                    </Button>
                 </div>
-                 {userProfile?.subscriptionRole === 'pro' && userProfile.trialEndsAt && (
-                    <div className="p-3 bg-primary-50 border border-primary-200 rounded-md">
-                        <p className="text-sm text-primary-800">
-                            Your Pro trial ends on: <span className="font-semibold">{new Date(userProfile.trialEndsAt.seconds * 1000).toLocaleDateString()}</span>.
-                        </p>
-                        <p className="text-xs text-primary-700 mt-1">Paid plans via Paddle coming soon!</p>
-                    </div>
-                )}
-            </div>
-        </div>
+            </form>
+        </section>
 
-        {/* Change Password */}
-        <div className="bg-white p-6 rounded-lg shadow mt-8">
-            <h2 className="text-xl font-semibold text-gray-700">Change Password</h2>
-            <form onSubmit={handlePasswordUpdate} className="mt-4 space-y-4">
-                <div>
-                    <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
-                        Current Password
-                    </label>
-                    <input
-                        type="password"
-                        id="current-password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-                        New Password
-                    </label>
-                    <input
-                        type="password"
-                        id="new-password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                    />
-                </div>
-                {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
-                {passwordMessage && <p className="text-sm text-green-600">{passwordMessage}</p>}
-                <div className="flex justify-end">
+        <hr className="my-10 border-gray-100" />
+
+        {/* Subscription Section */}
+        <section>
+             <h2 className="text-2xl font-bold text-gray-800">Subscription</h2>
+             <p className="text-slate-500 text-sm mt-1">Manage your current plan.</p>
+             <div className="mt-6">
+                 <FormRow label="Current Plan">
+                    <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div>
+                            <p className="text-lg font-semibold text-gray-800 capitalize">{userProfile?.subscriptionRole || 'Free'}</p>
+                            {userProfile?.subscriptionRole === 'pro' && userProfile.trialEndsAt && (
+                                <p className="text-sm text-slate-600">
+                                    Trial ends on: {new Date(userProfile.trialEndsAt.seconds * 1000).toLocaleDateString()}
+                                </p>
+                            )}
+                        </div>
+                        {userProfile?.subscriptionRole === 'free' && (
+                            <Button variant="outline" onClick={() => navigate('/pricing')}>
+                                Upgrade Plan
+                            </Button>
+                        )}
+                    </div>
+                </FormRow>
+             </div>
+        </section>
+
+        <hr className="my-10 border-gray-100" />
+
+         {/* Password Section */}
+        <section>
+            <h2 className="text-2xl font-bold text-gray-800">Change Password</h2>
+            <p className="text-slate-500 text-sm mt-1">For your security, you must provide your current password.</p>
+            <form onSubmit={handlePasswordUpdate} className="mt-6 space-y-6">
+                <FormRow label="Current Password" htmlFor="current-password">
+                    <input type="password" id="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary sm:text-sm" />
+                </FormRow>
+                 <FormRow label="New Password" htmlFor="new-password">
+                    <input type="password" id="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary sm:text-sm" />
+                </FormRow>
+                <div className="flex justify-end items-center gap-4">
+                    {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+                    {passwordMessage && <p className="text-sm text-green-600">{passwordMessage}</p>}
                     <Button type="submit" disabled={passwordLoading || !currentPassword || !newPassword}>
                         {passwordLoading ? <Spinner size="sm" /> : 'Change Password'}
                     </Button>
                 </div>
             </form>
-        </div>
+        </section>
+
+        <hr className="my-10 border-gray-100" />
         
         {/* Danger Zone */}
-        <div className="bg-red-50 p-6 rounded-lg shadow mt-8 border border-red-200">
-            <h2 className="text-xl font-semibold text-red-800">Danger Zone</h2>
-            <div className="mt-4 flex justify-between items-center">
-                <div>
-                    <p className="font-medium text-red-700">Delete My Account</p>
-                    <p className="text-sm text-red-600">Permanently delete your account and all associated data.</p>
-                </div>
-                 <Button variant="outline" onClick={handleDeleteAccount} disabled={deleteLoading} className="!border-red-500 !text-red-500 hover:!bg-red-100">
-                    {deleteLoading ? <Spinner size="sm" /> : 'Delete Account'}
-                </Button>
-            </div>
+        <section className="bg-red-50 p-6 rounded-xl border border-red-200">
+             <h2 className="text-2xl font-bold text-red-800">Danger Zone</h2>
+             <div className="mt-4 grid md:grid-cols-3 gap-4 items-center">
+                 <div className="md:col-span-1">
+                    <p className="font-semibold text-red-700">Delete My Account</p>
+                    <p className="text-sm text-red-600 mt-1">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                 </div>
+                 <div className="md:col-span-2 text-right">
+                    <Button variant="outline" onClick={handleDeleteAccount} disabled={deleteLoading} className="!border-red-500 !text-red-500 hover:!bg-red-100 focus:!ring-red-500">
+                        {deleteLoading ? <Spinner size="sm" /> : 'Delete Account'}
+                    </Button>
+                 </div>
+             </div>
             {deleteError && <p className="text-sm text-red-600 mt-4">{deleteError}</p>}
-        </div>
+        </section>
       </div>
     </div>
   );

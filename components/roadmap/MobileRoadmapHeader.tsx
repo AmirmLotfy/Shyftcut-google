@@ -17,7 +17,7 @@ const MobileRoadmapHeader: React.FC<MobileRoadmapHeaderProps> = ({
     onSelectMilestone
 }) => {
     return (
-        <div className="lg:hidden p-3 border-b border-slate-200 bg-white/80 backdrop-blur-lg flex items-center sticky top-0 z-10 space-x-2">
+        <div className="lg:hidden p-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-lg flex items-center sticky top-0 z-10 space-x-2">
             <Link to="/dashboard" className="p-2 rounded-md hover:bg-slate-100 flex-shrink-0">
                 <ArrowLeftIcon className="w-5 h-5 text-slate-600" />
             </Link>
@@ -26,7 +26,7 @@ const MobileRoadmapHeader: React.FC<MobileRoadmapHeaderProps> = ({
                  <select
                     value={selectedMilestoneId || ''}
                     onChange={(e) => onSelectMilestone(e.target.value)}
-                    className="w-full mt-1 block pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                    className="w-full mt-1.5 block pl-3 pr-10 py-1 text-base border-gray-200 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg"
                 >
                     {milestones.map((milestone) => (
                         <option key={milestone.id} value={milestone.id}>

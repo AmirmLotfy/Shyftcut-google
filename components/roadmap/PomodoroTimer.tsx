@@ -70,26 +70,26 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onSessionComplete }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow sticky top-8">
-            <h3 className="text-lg font-semibold text-center text-gray-800">Study Timer</h3>
-            <div className={`my-4 text-center p-4 rounded-lg ${mode === 'work' ? 'bg-primary-50' : 'bg-green-50'}`}>
-                <p className={`font-semibold ${mode === 'work' ? 'text-primary-700' : 'text-green-700'}`}>
-                    {mode === 'work' ? '⏱️ Study Time' : '☕ Break Time'}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-10">
+            <h3 className="text-xl font-bold text-center text-gray-800">Focus Timer</h3>
+            <div className={`my-6 text-center p-4 rounded-xl transition-colors duration-300 ${mode === 'work' ? 'bg-primary-50' : 'bg-green-50'}`}>
+                <p className={`font-semibold uppercase text-sm tracking-wider ${mode === 'work' ? 'text-primary-700' : 'text-green-700'}`}>
+                    {mode === 'work' ? 'Study Session' : 'Break Time'}
                 </p>
                 <p className="text-6xl font-bold text-gray-900 tracking-tighter">{formatTime(time)}</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-                <Button onClick={toggleTimer} variant={isActive ? 'outline' : 'primary'} className="col-span-2">
+            <div className="grid grid-cols-2 gap-4">
+                <Button onClick={toggleTimer} variant={isActive ? 'outline' : 'primary'} className="col-span-2 !py-3">
                     {isActive ? <><PauseIcon className="w-5 h-5 mr-2" /> Pause</> : <><PlayIcon className="w-5 h-5 mr-2" /> Start</>}
                 </Button>
-                <Button onClick={stopTimer} variant="outline">
+                <Button onClick={stopTimer} variant="ghost" className="!text-red-500 hover:!bg-red-50">
                     <StopIcon className="w-5 h-5 mr-2" /> Stop
                 </Button>
-                <Button onClick={resetTimer} variant="outline">
+                <Button onClick={resetTimer} variant="ghost">
                     <ArrowPathIcon className="w-5 h-5 mr-2" /> Reset
                 </Button>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-4">Work for {WORK_MINUTES} min, take a {BREAK_MINUTES} min break.</p>
+            <p className="text-xs text-gray-400 text-center mt-6">Work for {WORK_MINUTES} min, take a {BREAK_MINUTES} min break.</p>
         </div>
     );
 };

@@ -14,13 +14,13 @@ const Button: React.FC<ButtonProps> = ({
   className,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md';
+  const baseStyles = 'inline-flex items-center justify-center rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantStyles = {
-    primary: 'bg-primary text-white hover:bg-primary-600 focus:ring-primary-500',
-    secondary: 'bg-secondary text-white hover:bg-secondary-600 focus:ring-secondary-500',
-    outline: 'border border-slate-300 bg-transparent text-slate-700 hover:bg-slate-100 focus:ring-primary-500',
-    ghost: 'bg-transparent text-slate-700 hover:bg-slate-100 focus:ring-primary-500 shadow-none',
+    primary: 'bg-primary text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm hover:shadow-md',
+    secondary: 'bg-secondary text-white hover:bg-secondary-700 focus:ring-secondary-500 shadow-sm hover:shadow-md',
+    outline: 'border border-gray-300 bg-transparent text-slate-700 hover:bg-gray-100 focus:ring-primary-500',
+    ghost: 'bg-transparent text-slate-600 hover:bg-gray-100 hover:text-slate-900 focus:ring-primary-500 shadow-none',
   };
 
   const sizeStyles = {
@@ -31,8 +31,8 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...props}
     >
