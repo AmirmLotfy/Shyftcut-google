@@ -6,8 +6,9 @@ import { ArrowLeftIcon } from '../components/icons';
 import { useAuth } from '../hooks/useAuth';
 import { AnimatePresence } from 'framer-motion';
 import { Task } from '../types';
-import { doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../services/firebase';
 
 
 import RoadmapSidebar from '../components/roadmap/RoadmapSidebar';
@@ -107,10 +108,8 @@ const RoadmapDashboardPage: React.FC = () => {
         setIsDeleting(true);
         setActionError(null);
         try {
-            // Note: This client-side deletion will orphan subcollections (milestones, quizResults).
-            // A Cloud Function is the recommended way to handle recursive deletes.
-            const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
-            await deleteDoc(roadmapRef);
+            const deleteRoadmapFn = httpsCallable(functions, 'deleteRoadmap');
+            await deleteRoadmapFn({ roadmapId });
             navigate('/dashboard');
         } catch (e: any) {
             console.error("Failed to delete roadmap:", e);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, deleteUser } from 'firebase/auth';
-import { doc, updateDoc, collection, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
@@ -109,21 +109,8 @@ const SettingsPage: React.FC = () => {
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
 
-      const batch = writeBatch(db);
-      const userId = user.uid;
-
-      // Note: Client-side deletion of subcollections is not recommended as it can be slow and fail.
-      // The robust solution is a Cloud Function. This implementation will orphan subcollection data.
-      const roadmapsColRef = collection(db, 'tracks', userId, 'roadmaps');
-      const roadmapsSnapshot = await getDocs(roadmapsColRef);
-      roadmapsSnapshot.forEach(doc => batch.delete(doc.ref));
-      
-      const userDocRef = doc(db, 'users', userId);
-      batch.delete(userDocRef);
-      
-      await batch.commit();
-
-      // Finally, delete the auth user
+      // The onUserDelete cloud function will automatically handle cleanup of all Firestore data.
+      // We just need to delete the auth user here.
       await deleteUser(user);
       
       alert("Your account has been successfully deleted.");

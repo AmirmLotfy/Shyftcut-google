@@ -9,8 +9,9 @@ interface State {
   hasError: boolean;
 }
 
-// FIX: Changed to extend from React.Component directly to resolve type errors
-// where `setState` and `props` were not being recognized on the class instance.
+// FIX: The ErrorBoundary class must extend React.Component to function correctly as a class component,
+// giving it access to state, props, and lifecycle methods required for error handling.
+// FIX: The ErrorBoundary class must extend React.Component to be a valid class component with access to state and props.
 class ErrorBoundary extends React.Component<Props, State> {
   // Initialize state using modern class property syntax.
   state: State = { hasError: false };
