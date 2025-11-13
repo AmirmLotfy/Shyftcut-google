@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  sendSignInLinkToEmail,
   User,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
@@ -41,7 +42,9 @@ const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [emailForLink, setEmailForLink] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -74,6 +77,7 @@ const AuthPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setMessage(null);
     try {
       let userCredential;
       if (isLogin) {
@@ -93,11 +97,35 @@ const AuthPage: React.FC = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError(null);
+    setMessage(null);
     const provider = new GoogleAuthProvider();
     try {
         const result = await signInWithPopup(auth, provider);
         await createNewUserProfile(result.user);
         navigate('/dashboard');
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleEmailLinkSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+
+    const actionCodeSettings = {
+        url: `${window.location.origin}/#/finish-signin`,
+        handleCodeInApp: true,
+    };
+
+    try {
+        await sendSignInLinkToEmail(auth, emailForLink, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', emailForLink);
+        setMessage("A sign-in link has been sent to your email. Please check your inbox.");
+        setEmailForLink('');
     } catch (err: any) {
         setError(err.message);
     } finally {
@@ -146,7 +174,7 @@ const AuthPage: React.FC = () => {
                 </div>
                 )}
                 
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                {error && !message && <p className="text-red-500 text-sm text-center">{error}</p>}
 
                 <div>
                 <Button type="submit" className="w-full" disabled={loading}>
@@ -161,7 +189,7 @@ const AuthPage: React.FC = () => {
                     <div className="w-full border-t border-slate-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-slate-500">Or</span>
+                    <span className="px-2 bg-white text-slate-500">Or continue with</span>
                 </div>
                 </div>
 
@@ -178,8 +206,27 @@ const AuthPage: React.FC = () => {
                 </Button>
                 </div>
             </div>
+
+            <div className="mt-6">
+                 <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-white text-slate-500">Or sign in with a link</span>
+                    </div>
+                </div>
+                <form className="mt-6 space-y-4" onSubmit={handleEmailLinkSignIn}>
+                    <FloatingLabelInput id="email-link" name="email-link" type="email" value={emailForLink} onChange={(e: any) => setEmailForLink(e.target.value)} required>Email address</FloatingLabelInput>
+                    {message && <p className="text-green-600 text-sm text-center">{message}</p>}
+                    <Button type="submit" variant="outline" className="w-full" disabled={loading}>
+                        {loading ? <Spinner size="sm" /> : 'Send Sign-in Link'}
+                    </Button>
+                </form>
+            </div>
+
             <div className="text-sm text-center mt-6">
-                <button onClick={() => setIsLogin(!isLogin)} className="font-medium text-primary hover:text-primary-500">
+                <button onClick={() => { setIsLogin(!isLogin); setError(null); setMessage(null); }} className="font-medium text-primary hover:text-primary-500">
                     {isLogin ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
                 </button>
                 </div>

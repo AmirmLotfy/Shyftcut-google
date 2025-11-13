@@ -9,6 +9,7 @@ import LandingPage from './pages/LandingPage';
 import PricingPage from './pages/PricingPage';
 import AuthPage from './pages/AuthPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import FinishSignInPage from './pages/FinishSignInPage';
 import DashboardHomePage from './pages/DashboardHomePage';
 import RoadmapDashboardPage from './pages/RoadmapDashboardPage';
 import SettingsPage from './pages/SettingsPage';
@@ -42,6 +43,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/auth" element={<PublicOnlyRoute element={<AuthPage />} />} />
             <Route path="/forgot-password" element={<PublicOnlyRoute element={<ForgotPasswordPage />} />} />
+            <Route path="/finish-signin" element={<FinishSignInPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms-of-service" element={<TermsOfServicePage />} />
             <Route path="/utils/asset-uploader" element={<AssetUploaderPage />} />

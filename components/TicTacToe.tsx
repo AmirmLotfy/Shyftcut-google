@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from './Confetti';
 import Button from './Button';
-import { ArrowPathIcon, SparklesIcon, CpuChipIcon, UserGroupIcon } from './icons';
+import { ArrowPathIcon, SparklesIcon, CpuChipIcon, UserGroupIcon, CopyIcon, CheckIcon } from './icons';
 
 // --- Sub-components for better structure ---
 
@@ -54,15 +55,57 @@ const Scoreboard: React.FC<{ scores: { player: number; ai: number } }> = ({ scor
 );
 
 const GameOverOverlay: React.FC<{ winner: 'X' | 'O' | null; isDraw: boolean; onReset: () => void; }> = ({ winner, isDraw, onReset }) => {
+    const [copySuccess, setCopySuccess] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText('AI-CHAMPION').then(() => {
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        });
+    };
+
+    // Special message for when the player wins
+    if (winner === 'X') {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-100/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-20 p-4"
+            >
+                <Confetti />
+                <motion.div
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
+                    className="text-center p-8 bg-white rounded-xl shadow-2xl ring-1 ring-slate-200"
+                >
+                    <SparklesIcon className="w-16 h-16 mx-auto text-green-500" />
+                    <h3 className="text-3xl font-bold text-slate-900 mt-4">You Beat the AI!</h3>
+                    <p className="mt-2 text-slate-600">As a reward for your strategic genius, enjoy <br/> <strong className="text-primary">50% off your first 3 months</strong> of Shyftcut Pro!</p>
+                    <div className="mt-6 text-center">
+                        <p className="text-sm font-medium text-slate-500">Your Discount Code:</p>
+                        <div className="mt-1 flex items-center justify-center gap-2 p-2 border-2 border-dashed border-primary-300 bg-primary-50 rounded-lg">
+                            <span className="text-2xl font-bold font-mono text-primary tracking-wider">AI-CHAMPION</span>
+                            <Button variant="ghost" size="sm" onClick={handleCopy} className="!p-2 h-auto">
+                                {copySuccess ? <CheckIcon className="w-5 h-5 text-green-500" /> : <CopyIcon className="w-5 h-5" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <Button onClick={onReset} className="mt-6" size="lg">
+                        Play Again
+                    </Button>
+                </motion.div>
+            </motion.div>
+        );
+    }
+    
+    // Default messages for AI win or draw
     let message = '';
     let IconComponent: React.FC<React.SVGProps<SVGSVGElement>> | null = null;
     let iconColorClass = '';
 
-    if (winner === 'X') {
-        message = 'Congratulations!';
-        IconComponent = SparklesIcon;
-        iconColorClass = 'text-green-500';
-    } else if (winner === 'O') {
+    if (winner === 'O') {
         message = 'Better Luck Next Time!';
         IconComponent = CpuChipIcon;
         iconColorClass = 'text-red-500';
@@ -79,7 +122,6 @@ const GameOverOverlay: React.FC<{ winner: 'X' | 'O' | null; isDraw: boolean; onR
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-slate-100/70 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-20 p-4"
         >
-            {winner === 'X' && <Confetti />}
             <motion.div
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
