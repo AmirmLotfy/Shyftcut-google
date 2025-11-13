@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, animate } from 'framer-motion';
 import { Quiz, UserAnswer } from '../../types';
 import Button from '../Button';
 import Confetti from '../Confetti';
@@ -13,7 +13,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ to }) => {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
-        const controls = motion.animate(0, to, {
+        const controls = animate(0, to, {
             duration: 1.5,
             ease: "easeOut",
             onUpdate: (value) => {

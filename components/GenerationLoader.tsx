@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, animate } from 'framer-motion';
 import { Logo, CheckCircleIcon, XCircleIcon } from './icons';
 import Spinner from './Spinner';
 
@@ -19,7 +19,7 @@ const AnimatedCounter: React.FC<{ to: number; initial?: number }> = ({ to, initi
     const [count, setCount] = useState(initial);
   
     useEffect(() => {
-        const controls = motion.animate(initial, to, {
+        const controls = animate(initial, to, {
             duration: 2,
             ease: "easeOut",
             onUpdate: (value) => setCount(Math.floor(value)),

@@ -71,21 +71,26 @@ const QuizSelector: React.FC<QuizSelectorProps> = ({ quizzes, milestoneId, roadm
         if (!user) return;
     
         const resultsCol = collection(db, `tracks/${user.uid}/roadmaps/${roadmapId}/quizResults`);
-        const q = query(resultsCol, where('milestoneId', '==', milestoneId), orderBy('timestamp', 'desc'));
+        // FIX: Remove orderBy to avoid needing a composite index. We will find the latest result on the client.
+        const q = query(resultsCol, where('milestoneId', '==', milestoneId));
     
         const unsubscribe = onSnapshot(q, (snapshot) => {
-          const latestResults = new Map<string, QuizResult>();
-          snapshot.docs.forEach(doc => {
-            const result = doc.data() as QuizResult;
-            if (!latestResults.has(result.quizId) || (latestResults.get(result.quizId)!.timestamp < result.timestamp)) {
-              latestResults.set(result.quizId, result);
-            }
-          });
-          setResults(latestResults);
+            // Process all results for the milestone to find the latest one for each quiz.
+            const allResultsForMilestone = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuizResult));
+            const latestResults = new Map<string, QuizResult>();
+            
+            allResultsForMilestone.forEach(result => {
+                const existingResult = latestResults.get(result.quizId);
+                // If we haven't seen this quiz yet, or if the current result is newer, update the map.
+                if (!existingResult || existingResult.timestamp.toMillis() < result.timestamp.toMillis()) {
+                    latestResults.set(result.quizId, result);
+                }
+            });
+            setResults(latestResults);
         });
     
         return () => unsubscribe();
-      }, [user, roadmapId, milestoneId]);
+    }, [user, roadmapId, milestoneId]);
 
 
     if (activeQuiz) {
