@@ -259,6 +259,22 @@ const TicTacToe: React.FC = () => {
     return (
         <div className="w-full max-w-sm mx-auto p-4 sm:p-6 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xl">
             <Scoreboard scores={scores} />
+            
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mt-4 p-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-l-4 border-primary rounded-lg text-center shadow-inner"
+            >
+                <div className="flex items-center justify-center">
+                    <SparklesIcon className="w-6 h-6 text-primary mr-3 flex-shrink-0" />
+                    <h4 className="font-bold text-slate-800">AI Challenge: Victory Unlocks a Prize!</h4>
+                </div>
+                <p className="mt-2 text-sm text-slate-600">
+                    Outsmart our AI to win an exclusive <strong className="font-semibold text-primary">50% discount</strong> on 3 months of Shyftcut Pro.
+                </p>
+            </motion.div>
+
             <div className="my-4">
                 <GameStatus status={status} winner={winnerInfo.winner} />
             </div>
