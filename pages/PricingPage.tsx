@@ -7,7 +7,8 @@ import { motion } from 'framer-motion';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { authenticatedFetch } from '../services/api';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const tiers = [
   {
@@ -84,8 +85,13 @@ const PricingPage: React.FC = () => {
 
         setLoadingPlan(tier.name);
         try {
-          await authenticatedFetch('/api/user/activate-trial', user, {
-            method: 'POST',
+          const userRef = doc(db, 'users', user.uid);
+          const trialEndDate = new Date();
+          trialEndDate.setMonth(trialEndDate.getMonth() + 1);
+
+          await updateDoc(userRef, {
+            subscriptionRole: 'pro',
+            trialEndsAt: trialEndDate,
           });
 
           setSuccessMessage('Your 1-month Pro trial has been activated! Redirecting...');

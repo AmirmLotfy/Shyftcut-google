@@ -6,7 +6,9 @@ import { ArrowLeftIcon } from '../components/icons';
 import { useAuth } from '../hooks/useAuth';
 import { AnimatePresence } from 'framer-motion';
 import { Task } from '../types';
-import { authenticatedFetch } from '../services/api';
+import { doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../services/firebase';
+
 
 import RoadmapSidebar from '../components/roadmap/RoadmapSidebar';
 import RoadmapHeader from '../components/roadmap/RoadmapHeader';
@@ -31,7 +33,6 @@ const RoadmapDashboardPage: React.FC = () => {
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
-    // State for new Focus Mode Timer
     const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
     const [focusTask, setFocusTask] = useState<Task | null>(null);
 
@@ -75,9 +76,10 @@ const RoadmapDashboardPage: React.FC = () => {
         setIsArchiving(true);
         setActionError(null);
         try {
-            await authenticatedFetch(`/api/roadmap/${roadmapId}`, user, {
-                method: 'PATCH',
-                body: JSON.stringify({ status: 'archived' }),
+            const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
+            await updateDoc(roadmapRef, {
+                status: 'archived',
+                updatedAt: serverTimestamp(),
             });
             navigate('/dashboard');
         } catch (e: any) {
@@ -90,9 +92,10 @@ const RoadmapDashboardPage: React.FC = () => {
 
     const handleSaveEdit = async (updatedData: { title: string; description: string }) => {
         if (!roadmapId || !user) return;
-        await authenticatedFetch(`/api/roadmap/${roadmapId}`, user, {
-            method: 'PATCH',
-            body: JSON.stringify(updatedData),
+        const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
+        await updateDoc(roadmapRef, {
+            ...updatedData,
+            updatedAt: serverTimestamp(),
         });
     };
 
@@ -104,9 +107,10 @@ const RoadmapDashboardPage: React.FC = () => {
         setIsDeleting(true);
         setActionError(null);
         try {
-            await authenticatedFetch(`/api/roadmap/${roadmapId}`, user, {
-                method: 'DELETE',
-            });
+            // Note: This client-side deletion will orphan subcollections (milestones, quizResults).
+            // A Cloud Function is the recommended way to handle recursive deletes.
+            const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
+            await deleteDoc(roadmapRef);
             navigate('/dashboard');
         } catch (e: any) {
             console.error("Failed to delete roadmap:", e);
