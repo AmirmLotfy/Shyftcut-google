@@ -4,11 +4,9 @@ import { useRoadmapData } from '../hooks/useRoadmapData';
 import Spinner from '../components/Spinner';
 import { ArrowLeftIcon } from '../components/icons';
 import { useAuth } from '../hooks/useAuth';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db, functions } from '../services/firebase';
-import { httpsCallable } from 'firebase/functions';
 import { AnimatePresence } from 'framer-motion';
 import { Task } from '../types';
+import { authenticatedFetch } from '../services/api';
 
 import RoadmapSidebar from '../components/roadmap/RoadmapSidebar';
 import RoadmapHeader from '../components/roadmap/RoadmapHeader';
@@ -26,10 +24,10 @@ const RoadmapDashboardPage: React.FC = () => {
     const { user } = useAuth();
     const { roadmap, milestones, quizResults, loading, error, updateTaskCompletion, updateCourseCompletion, updateTimeSpent } = useRoadmapData(roadmapId!);
     
-    const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
     const [isArchiving, setIsArchiving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
@@ -77,15 +75,14 @@ const RoadmapDashboardPage: React.FC = () => {
         setIsArchiving(true);
         setActionError(null);
         try {
-            const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
-            await updateDoc(roadmapRef, {
-                status: 'archived',
-                updatedAt: serverTimestamp(),
+            await authenticatedFetch(`/api/roadmap/${roadmapId}`, user, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'archived' }),
             });
             navigate('/dashboard');
-        } catch (e) {
+        } catch (e: any) {
             console.error("Failed to archive roadmap:", e);
-            setActionError("Could not archive roadmap. Please try again.");
+            setActionError(e.message || "Could not archive roadmap. Please try again.");
         } finally {
             setIsArchiving(false);
         }
@@ -93,10 +90,9 @@ const RoadmapDashboardPage: React.FC = () => {
 
     const handleSaveEdit = async (updatedData: { title: string; description: string }) => {
         if (!roadmapId || !user) return;
-        const roadmapRef = doc(db, 'tracks', user.uid, 'roadmaps', roadmapId);
-        await updateDoc(roadmapRef, {
-            ...updatedData,
-            updatedAt: serverTimestamp(),
+        await authenticatedFetch(`/api/roadmap/${roadmapId}`, user, {
+            method: 'PATCH',
+            body: JSON.stringify(updatedData),
         });
     };
 
@@ -108,12 +104,13 @@ const RoadmapDashboardPage: React.FC = () => {
         setIsDeleting(true);
         setActionError(null);
         try {
-            const deleteRoadmapFunc = httpsCallable(functions, 'deleteRoadmap');
-            await deleteRoadmapFunc({ roadmapId });
+            await authenticatedFetch(`/api/roadmap/${roadmapId}`, user, {
+                method: 'DELETE',
+            });
             navigate('/dashboard');
-        } catch (e) {
+        } catch (e: any) {
             console.error("Failed to delete roadmap:", e);
-            setActionError("Could not delete roadmap. Please try again later.");
+            setActionError(e.message || "Could not delete roadmap. Please try again later.");
         } finally {
             setIsDeleting(false);
         }

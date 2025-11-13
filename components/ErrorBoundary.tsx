@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import GenericErrorPage from '../pages/GenericErrorPage';
 
 interface Props {
@@ -9,9 +9,9 @@ interface State {
   hasError: boolean;
 }
 
-// FIX: Changed to extend from the imported `Component` class directly.
-// This resolves type errors where `setState` and `props` were not being recognized on the class instance.
-class ErrorBoundary extends Component<Props, State> {
+// FIX: Changed to extend from React.Component directly to resolve type errors
+// where `setState` and `props` were not being recognized on the class instance.
+class ErrorBoundary extends React.Component<Props, State> {
   // Initialize state using modern class property syntax.
   state: State = { hasError: false };
 

@@ -1,8 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { UserPreferences } from '../types';
-import { functions } from '../services/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { authenticatedFetch } from '../services/api';
 
 export const useGenerateRoadmap = () => {
     const [loading, setLoading] = useState(false);
@@ -34,18 +33,19 @@ export const useGenerateRoadmap = () => {
         }
         
         try {
-            const generateRoadmapFunction = httpsCallable(functions, 'generateRoadmap');
-            const result = await generateRoadmapFunction({ preferences });
-            
-            const data = result.data as { roadmapId: string };
+            const data = await authenticatedFetch('/api/generateRoadmap', user, {
+                method: 'POST',
+                body: JSON.stringify({ preferences })
+            });
+
             if (!data || !data.roadmapId) {
-                throw new Error("Cloud function did not return a valid roadmap ID.");
+                throw new Error("API did not return a valid roadmap ID.");
             }
 
             return { roadmapId: data.roadmapId };
 
         } catch (err: any) {
-            console.error("Error calling generateRoadmap cloud function:", err);
+            console.error("Error calling generateRoadmap API:", err);
             const errorMessage = err.message || 'An unknown error occurred while generating the roadmap. Please try again later.';
             setError(errorMessage);
             throw new Error(errorMessage);

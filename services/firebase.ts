@@ -3,9 +3,10 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { getFunctions, Functions } from 'firebase/functions';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, Analytics } from "firebase/analytics";
+// FIX: Import getFunctions and Functions to make it available for other modules.
+import { getFunctions, Functions } from 'firebase/functions';
 
 // Your web app's Firebase configuration from the user prompt
 const firebaseConfig = {
@@ -23,21 +24,24 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
-let functions: Functions;
 let storage: FirebaseStorage;
 let analytics: Analytics;
+// FIX: Declare the functions variable.
+let functions: Functions;
 
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  functions = getFunctions(app);
   storage = getStorage(app);
   analytics = getAnalytics(app);
+  // FIX: Initialize the functions service.
+  functions = getFunctions(app);
   console.log("Firebase initialized successfully");
 } catch (error) {
   console.error("Error initializing Firebase:", error);
 }
 
 
-export { app, auth, db, functions, storage, analytics };
+// FIX: Export the functions service.
+export { app, auth, db, storage, analytics, functions };

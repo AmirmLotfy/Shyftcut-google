@@ -1,4 +1,3 @@
-
 # Shyftcut: AI Learning Roadmap Generator
 
 **Your personalized AI mentor for the future of work.**
@@ -27,19 +26,22 @@ Shyftcut is a feature-rich, AI-powered learning roadmap generator designed for s
 ## 🛠️ Tech Stack
 
 -   **Frontend**: React, TypeScript, Tailwind CSS, Framer Motion
--   **Backend & Database**: Firebase (Authentication, Firestore, Storage, Cloud Functions)
+-   **Backend**: Node.js, Express.js (for secure API proxy)
+-   **Database & Auth**: Firebase (Authentication, Firestore, Storage)
 -   **AI Model**: Google Gemini API (`@google/genai`)
+-   **Deployment**: Docker, Google Cloud Run
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+Follow these instructions to get the project running locally for development.
 
 ### Prerequisites
 
 -   [Node.js](https://nodejs.org/) (v18.0 or later)
 -   [Firebase CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`)
+-   An active Google Cloud project with the Gemini API enabled.
 
 ### Installation & Setup
 
@@ -54,95 +56,79 @@ Follow these instructions to get a copy of the project up and running on your lo
     npm install
     ```
 
-3.  **Install Firebase Functions dependencies:**
+3.  **Install backend server dependencies:**
     ```bash
-    cd functions
+    cd server
     npm install
     cd ..
     ```
 
 4.  **Set up Firebase Project:**
     -   Create a new project on the [Firebase Console](https://console.firebase.google.com/).
-    -   Enable the following services:
-        -   **Authentication**: Enable Email/Password, Google, and Email Link (passwordless) sign-in methods.
-        -   **Firestore Database**: Create a new database in production mode. The security rules are already defined in `firestore.rules`.
-        -   **Storage**: Create a new storage bucket. The rules are in `storage.rules`.
-        -   **Functions**.
-    -   Register a new **Web App** in your Firebase project settings.
-    -   Copy the `firebaseConfig` object and replace the placeholder in `src/services/firebase.ts`.
+    -   Enable **Authentication** (Email/Password, Google, Email Link), **Firestore Database**, and **Storage**.
+    -   Register a new **Web App** and copy the `firebaseConfig` object into `src/services/firebase.ts`.
+    -   Generate a **service account private key** for the backend server:
+        -   In Firebase, go to Project Settings > Service accounts.
+        -   Click "Generate new private key".
+        -   Save the downloaded JSON file as `server/serviceAccountKey.json`.
+        -   **Important**: This file is sensitive. It's included in `.gitignore` and should never be committed to source control.
 
 5.  **Set up Google Gemini API Key:**
     -   Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-    -   Set this key as a secret for your Firebase Functions. This is more secure than hardcoding it. Run this command in your project root:
-    ```bash
-    firebase functions:secrets:set GEMINI_API_KEY
-    ```
-    -   When prompted, enter your API key. This will make it securely available to your Cloud Functions as `process.env.GEMINI_API_KEY`.
+    -   Create a file named `.env` in the `server/` directory.
+    -   Add your API key to the `.env` file:
+        ```
+        GEMINI_API_KEY=your_gemini_api_key_here
+        ```
 
 ### Running the Project Locally
 
-Using the Firebase Emulators is highly recommended for local development.
+This project uses `concurrently` to run both the React development server and the backend API server at the same time.
 
-1.  **Start the Firebase emulators:**
-    This command will start local emulators for Authentication, Firestore, Functions, and Storage.
+1.  **Start the local development environment:**
+    From the project's root directory, run:
     ```bash
-    firebase emulators:start
+    npm run dev
     ```
+    This will:
+    -   Start the React development server (usually on `http://localhost:3000`).
+    -   Start the Node.js backend server (on `http://localhost:8080`). The React app is configured to proxy API requests to this server.
 
-2.  **Start the React development server:**
-    In a **new terminal window**, start the React app.
-    ```bash
-    npm start
-    ```
-
-3.  **Access the application:**
-    -   The frontend will be available at `http://localhost:3000` (or the port specified by your dev server).
-    -   The Firebase Emulator UI will be available at `http://localhost:4000`.
+2.  **Access the application:**
+    Open your browser and navigate to `http://localhost:3000`.
 
 ---
 
-## 🧪 Testing
+## 🚀 Deployment to Cloud Run
 
-This project is set up with a testing framework for both the frontend application and the backend functions.
+The included `Dockerfile` is configured to build and serve the entire application (React frontend and Node.js backend) as a single container.
 
-### Frontend Tests (React)
+1.  **Enable Google Cloud Services:**
+    Make sure you have the following APIs enabled in your Google Cloud project:
+    -   Cloud Run API
+    -   Artifact Registry API
+    -   Cloud Build API
 
-We use **Jest** and **React Testing Library** for unit and component testing.
+2.  **Deploy using gcloud CLI:**
+    From the root directory of the project, run the following command. This command will build the container image using Cloud Build, push it to Artifact Registry, and deploy it to Cloud Run.
 
--   **Running Tests**: To run the frontend tests, execute the following command from the root directory:
     ```bash
-    npm test
+    gcloud run deploy shyftcut-app --source . --region YOUR_REGION --allow-unauthenticated
     ```
--   **Test Location**: Test files should be co-located with the components they are testing (e.g., `Button.tsx` and `Button.test.tsx`).
+    -   Replace `shyftcut-app` with your desired service name.
+    -   Replace `YOUR_REGION` with your preferred Google Cloud region (e.g., `us-central1`).
 
-### Firebase Functions Tests
+3.  **Set Environment Variables on Cloud Run:**
+    After the first deployment, you must set the required environment variables for your service to function correctly.
+    -   Navigate to your service in the Cloud Run section of the Google Cloud Console.
+    -   Click "Edit & Deploy New Revision".
+    -   Go to the "Variables & Secrets" tab.
+    -   Add the following environment variables:
+        -   `GEMINI_API_KEY`: Your Gemini API key. For best practice, use Google Secret Manager to store this.
+        -   `GOOGLE_APPLICATION_CREDENTIALS`: Set this to `/app/server/serviceAccountKey.json`. This tells the Firebase Admin SDK where to find the credentials inside the container.
+        -   `NODE_ENV`: `production`.
 
-We use **Jest** and `firebase-functions-test` to test the backend logic against the emulators.
-
-1.  **Setup (Offline Testing)**:
-    -   Ensure the Firebase Emulators are running (`firebase emulators:start`).
-    -   The test scripts are pre-configured to connect to the local emulators.
-
-2.  **Running Tests**: To run the functions tests, navigate to the `functions` directory and run the test command:
-    ```bash
-    cd functions
-    npm test
-    ```
-
----
-
-## 🚀 Deployment
-
-1.  **Build the React application:**
-    From the root directory, run the build command. This will create a `dist` folder (or similar, depending on the build tool).
-    ```bash
-    npm run build
-    ```
-2.  **Deploy to Firebase:**
-    This single command will deploy your hosting files, cloud functions, and Firestore rules/indexes.
-    ```bash
-    firebase deploy
-    ```
+4.  **Redeploy the revision with the new environment variables.** Your application is now live!
 
 ---
 
@@ -150,28 +136,17 @@ We use **Jest** and `firebase-functions-test` to test the backend logic against 
 
 ```
 .
-├── functions/              # Firebase Cloud Functions
-│   ├── src/index.ts        # Main functions file (AI logic, triggers, API endpoints)
+├── server/                 # Node.js Express backend server
+│   ├── src/index.ts        # Main server file (API routes, auth middleware)
 │   ├── package.json
-│   └── tsconfig.json
+│   ├── serviceAccountKey.json # (Git-ignored) Firebase Admin credentials
+│   └── .env                # (Git-ignored) Gemini API key for local dev
 ├── src/                    # React application source
-│   ├── components/         # Reusable UI components (Button, Card, etc.)
-│   ├── constants/          # App-wide constants (career tracks, blog posts)
-│   ├── contexts/           # React context providers (e.g., AuthContext)
-│   ├── hooks/              # Custom React hooks (useAuth, useWizardState)
-│   ├── layouts/            # Page layout components (DashboardLayout)
+│   ├── components/         # Reusable UI components
+│   ├── hooks/              # Custom React hooks (useAuth, useGenerateRoadmap)
 │   ├── pages/              # Top-level page components
-│   ├── services/           # Service integrations (Firebase, Gemini)
-│   ├── types.ts            # TypeScript type definitions
-│   └── App.tsx             # Main app component with routing
-├── firebase.json           # Firebase project configuration
-├── firestore.indexes.json  # Firestore index definitions
-├── README.md               # This file
-└── index.html              # Main HTML entry point
+│   └── ...
+├── Dockerfile              # Docker configuration for Cloud Run
+├── firebase.json           # Firebase project configuration (for Firestore rules)
+└── README.md               # This file
 ```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.

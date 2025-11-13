@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db, auth, functions } from '../services/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { db, auth } from '../services/firebase';
+import { authenticatedFetch } from '../services/api';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import { useNavigate } from 'react-router-dom';
@@ -112,21 +111,20 @@ const SettingsPage: React.FC = () => {
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
 
-      // Call the cloud function to delete all user data
-      const deleteUserDataFunc = httpsCallable(functions, 'deleteUserData');
-      await deleteUserDataFunc();
-
-      // The onAuthStateChanged listener will automatically handle logout and navigation
-      // but we can navigate away immediately for a better user experience.
+      // Call the backend API to delete all user data
+      await authenticatedFetch('/api/user', user, {
+        method: 'DELETE',
+      });
+      
       alert("Your account has been successfully deleted.");
+      // Firebase auth state change will handle navigation, but we can force it
+      await auth.signOut();
       navigate('/');
       
     } catch (error: any) {
       console.error("Error deleting account:", error);
       if (error.code === 'auth/wrong-password') {
         setDeleteError("Incorrect password. Deletion failed.");
-      } else if (error.code === 'functions/internal') {
-        setDeleteError("A server error occurred while deleting your data. Please contact support.");
       } else {
         setDeleteError(`An error occurred: ${error.message}`);
       }
