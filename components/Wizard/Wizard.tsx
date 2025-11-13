@@ -47,29 +47,48 @@ const Wizard: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen gradient-primary py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200/80 relative">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                <motion.div 
+                    className="glass-card overflow-hidden relative"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
+                    <motion.button 
+                      variant="glass" 
                       onClick={() => navigate('/dashboard')}
-                      className="absolute top-4 right-4 z-20 !p-2 h-auto"
+                      className="absolute top-4 right-4 z-20 !p-2.5 h-auto backdrop-blur-sm bg-white/60 text-slate-600 hover:bg-white/80 border border-white/30 rounded-full transition-all"
                       aria-label="Close wizard"
+                      whileHover={{ scale: 1.1, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
                     >
-                      <XIcon className="h-6 w-6 text-slate-500" />
-                    </Button>
-                    <div className="p-6 sm:p-8 border-b border-slate-200">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Create Your Learning Plan</h1>
-                        <p className="mt-1 text-slate-500">Let's personalize your journey in just a few steps.</p>
+                      <XIcon className="h-5 w-5" />
+                    </motion.button>
+                    <div className="p-6 sm:p-8 border-b border-white/20">
+                        <motion.h1 
+                            className="text-2xl sm:text-3xl font-bold text-gray-900"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            Create Your Learning Plan
+                        </motion.h1>
+                        <motion.p 
+                            className="mt-2 text-slate-600"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            Let's personalize your journey in just a few steps.
+                        </motion.p>
                         
                         <div className="mt-6" aria-label="Progress">
-                            <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium text-primary">Step {step} of {WIZARD_STEPS}</p>
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-semibold text-primary">Step {step} of {WIZARD_STEPS}</p>
                             </div>
-                            <div className="bg-slate-200 rounded-full h-2 mt-2 overflow-hidden">
+                            <div className="glass-card p-1 rounded-full backdrop-blur-sm bg-slate-200/50 border border-white/30 h-3 overflow-hidden">
                                 <motion.div
-                                    className="bg-primary h-2 rounded-full"
+                                    className="bg-gradient-to-r from-primary to-secondary h-full rounded-full shadow-lg"
                                     initial={{ width: 0 }}
                                     animate={{ width: `${(step / WIZARD_STEPS) * 100}%` }}
                                     transition={{ duration: 0.5, ease: 'easeInOut' }}
@@ -88,15 +107,22 @@ const Wizard: React.FC = () => {
                                 exit="exit"
                                 transition={{
                                     x: { type: "spring", stiffness: 300, damping: 30 },
-                                    opacity: { duration: 0.2 }
+                                    opacity: { duration: 0.3 }
                                 }}
                             >
                                 <CurrentStepComponent {...wizardState} />
                             </motion.div>
                          </AnimatePresence>
                     </div>
-                </div>
-                 <p className="text-center text-xs text-slate-400 mt-4">Your progress is automatically saved.</p>
+                </motion.div>
+                 <motion.p 
+                    className="text-center text-xs text-slate-500 mt-4 backdrop-blur-sm bg-white/40 px-4 py-2 rounded-lg inline-block border border-white/30"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                >
+                    Your progress is automatically saved.
+                </motion.p>
             </div>
         </div>
     );

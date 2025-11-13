@@ -75,12 +75,12 @@ const LandingPage: React.FC = () => {
 
 
   return (
-    <div className="bg-slate-50 text-slate-800">
+    <div className="gradient-primary min-h-screen">
       <Header />
       <main>
         {/* Hero Section */}
         <section className="relative overflow-hidden">
-           <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-secondary-50 animate-background-pan" />
+           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-white/95 to-secondary/10 animate-background-pan" />
             <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-20 lg:py-0 lg:min-h-[calc(100vh-5rem)]">
                     <motion.div
@@ -127,7 +127,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-24 sm:py-32 bg-slate-100/50">
+        <section id="how-it-works" className="py-24 sm:py-32 bg-white/60 backdrop-blur-sm">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -151,11 +151,11 @@ const LandingPage: React.FC = () => {
                     viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg mx-auto">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-secondary/20 to-secondary/30 backdrop-blur-sm border-2 border-secondary/30 shadow-lg shadow-secondary/20 mx-auto">
                     <LightBulbIcon className="h-8 w-8 text-secondary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-slate-900">1. Share Your Goal</h3>
-                    <p className="mt-2 text-slate-600">Tell our AI what you want to learn, your current skill level, and how much time you can commit.</p>
+                    <h3 className="text-xl font-bold text-gray-900">1. Share Your Goal</h3>
+                    <p className="mt-2 text-slate-700">Tell our AI what you want to learn, your current skill level, and how much time you can commit.</p>
                 </motion.div>
                 {/* Step 2 */}
                 <motion.div
@@ -164,11 +164,11 @@ const LandingPage: React.FC = () => {
                     viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg mx-auto">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/30 backdrop-blur-sm border-2 border-primary/30 shadow-lg shadow-primary/20 mx-auto">
                     <SparklesIcon className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-slate-900">2. Get Your AI Roadmap</h3>
-                    <p className="mt-2 text-slate-600">Receive a custom, step-by-step learning plan with curated resources, projects, and quizzes.</p>
+                    <h3 className="text-xl font-bold text-gray-900">2. Get Your AI Roadmap</h3>
+                    <p className="mt-2 text-slate-700">Receive a custom, step-by-step learning plan with curated resources, projects, and quizzes.</p>
                 </motion.div>
                 {/* Step 3 */}
                 <motion.div
@@ -177,18 +177,18 @@ const LandingPage: React.FC = () => {
                     viewport={{ once: true, amount: 0.5 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg mx-auto">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-secondary/20 to-secondary/30 backdrop-blur-sm border-2 border-secondary/30 shadow-lg shadow-secondary/20 mx-auto">
                     <ChartPieIcon className="h-8 w-8 text-secondary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-slate-900">3. Track Your Progress</h3>
-                    <p className="mt-2 text-slate-600">Follow the plan, mark tasks as complete, and watch your skills grow on your personal dashboard.</p>
+                    <h3 className="text-xl font-bold text-gray-900">3. Track Your Progress</h3>
+                    <p className="mt-2 text-slate-700">Follow the plan, mark tasks as complete, and watch your skills grow on your personal dashboard.</p>
                 </motion.div>
                 </div>
             </div>
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-24 sm:py-32">
+        <section id="features" className="py-24 sm:py-32 bg-white/40 backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -197,11 +197,11 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <h2 className="text-base font-semibold leading-7 text-primary">Everything You Need</h2>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              <h2 className="text-base font-bold uppercase tracking-wider leading-7 text-primary">Everything You Need</h2>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 Learn Smarter, Not Harder
               </p>
-              <p className="mt-6 text-lg leading-8 text-slate-600">
+              <p className="mt-6 text-lg leading-8 text-slate-700">
                 Shyftcut provides the tools and structure to accelerate your learning journey.
               </p>
             </motion.div>
@@ -209,20 +209,20 @@ const LandingPage: React.FC = () => {
               {features.map((feature, index) => (
                 <motion.div 
                   key={feature.name} 
-                  className="relative flex flex-col p-8 rounded-2xl bg-white/50 border border-slate-200/80 transition-all duration-300 hover:shadow-2xl hover:bg-white hover:-translate-y-2 group"
+                  className="relative flex flex-col p-8 rounded-2xl glass-card transition-all duration-300 hover:-translate-y-2 group"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <dt className="text-base font-semibold leading-7 text-slate-900">
-                    <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary text-white shadow-lg">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <dt className="text-base font-bold leading-7 text-gray-900">
+                    <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary text-white shadow-lg shadow-primary/30">
                       <SparklesIcon className="h-6 w-6" />
                     </div>
                     {feature.name}
                   </dt>
-                  <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-slate-600">
+                  <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-slate-700">
                     <p className="flex-auto">{feature.description}</p>
                   </dd>
                 </motion.div>
@@ -232,7 +232,7 @@ const LandingPage: React.FC = () => {
         </section>
         
         {/* Blog Section */}
-        <section id="blog" className="py-24 sm:py-32 bg-slate-100/50">
+        <section id="blog" className="py-24 sm:py-32 bg-white/60 backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -259,14 +259,17 @@ const LandingPage: React.FC = () => {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Link to={`/blog/${post.slug}`} className="block group">
-                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-2 h-full flex flex-col">
+                    <motion.div 
+                      className="glass-card overflow-hidden h-full flex flex-col"
+                      whileHover={{ y: -8 }}
+                    >
                       <img className="h-48 w-full object-cover" src={post.imageUrl} alt="" />
                       <div className="p-6 flex flex-col flex-grow">
-                        <p className="text-sm font-semibold text-primary">{post.category}</p>
-                        <h3 className="mt-2 text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">{post.title}</h3>
-                        <p className="mt-3 text-base text-slate-600 line-clamp-3 flex-grow">{post.excerpt}</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-primary">{post.category}</p>
+                        <h3 className="mt-2 text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">{post.title}</h3>
+                        <p className="mt-3 text-base text-slate-700 line-clamp-3 flex-grow leading-relaxed">{post.excerpt}</p>
                       </div>
-                    </div>
+                    </motion.div>
                   </Link>
                 </motion.div>
               ))}
@@ -281,13 +284,13 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Pricing Preview Section */}
-        <section className="py-24 sm:py-32 bg-white">
+        <section className="py-24 sm:py-32 bg-gradient-to-br from-primary/10 via-white/80 to-secondary/10 backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 Start Your Pro Journey for Free
               </h2>
-              <p className="mt-6 text-lg leading-8 text-slate-600">
+              <p className="mt-6 text-lg leading-8 text-slate-700">
                 To celebrate our launch, get 1 month of Pro on us. No credit card required.
               </p>
             </div>
@@ -299,35 +302,37 @@ const LandingPage: React.FC = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className={`relative flex flex-col rounded-2xl shadow-lg border ${tier.mostPopular ? 'border-transparent' : 'border-slate-200'}`}
+                  className={`relative flex flex-col rounded-2xl shadow-xl border-2 ${tier.mostPopular ? 'border-transparent' : 'border-white/30 glass-card'}`}
                 >
                   {tier.mostPopular && (
-                      <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary to-secondary animate-glow" style={{ filter: 'blur(6px)' }} />
+                      <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary to-secondary animate-glow" style={{ filter: 'blur(8px)' }} />
                   )}
-                  <div className="relative flex flex-col bg-white rounded-2xl h-full p-8">
-                    <h3 className="text-2xl font-semibold text-slate-900">{tier.name}</h3>
+                  <div className={`relative flex flex-col rounded-2xl h-full p-8 ${tier.mostPopular ? 'glass-card bg-white/90' : 'bg-white/70 backdrop-blur-sm'}`}>
+                    <h3 className="text-2xl font-bold text-gray-900">{tier.name}</h3>
                     {tier.mostPopular && (
-                      <p className="absolute top-0 -translate-y-1/2 transform bg-gradient-to-r from-primary to-secondary px-3 py-1 text-sm font-semibold text-white rounded-full shadow-md">Most Popular</p>
+                      <p className="absolute top-0 -translate-y-1/2 transform bg-gradient-to-r from-primary to-secondary px-4 py-1.5 text-xs font-bold text-white rounded-full shadow-lg shadow-primary/30 uppercase tracking-wider">Most Popular</p>
                     )}
                     <div className="mt-6">
-                      <p className="text-4xl font-bold tracking-tight text-slate-900">
+                      <p className="text-4xl font-bold tracking-tight text-gray-900">
                         {tier.price}
-                        {tier.frequency && <span className="text-lg font-medium text-slate-500 ml-1">{tier.frequency}</span>}
+                        {tier.frequency && <span className="text-lg font-medium text-slate-600 ml-1">{tier.frequency}</span>}
                       </p>
                       {tier.originalPrice && (
-                        <p className="text-sm text-slate-400 mt-1">{tier.originalPrice}</p>
+                        <p className="text-sm text-slate-500 mt-1">{tier.originalPrice}</p>
                       )}
                     </div>
                     <ul role="list" className="mt-8 space-y-4 text-slate-700">
                       {tier.features.map((feature) => (
                         <li key={feature} className="flex items-start">
-                          <CheckCircleIcon className="h-6 w-6 text-green-500 flex-shrink-0 mr-3" />
-                          <span>{feature}</span>
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30 mr-3">
+                            <CheckCircleIcon className="h-4 w-4 text-white" />
+                          </div>
+                          <span className="font-medium">{feature}</span>
                         </li>
                       ))}
                     </ul>
                     <div className="mt-auto pt-8">
-                      <Button variant={tier.mostPopular ? 'primary' : 'outline'} className="w-full" size="lg" onClick={() => navigate('/pricing')}>
+                      <Button variant={tier.mostPopular ? 'primary' : 'glass-primary'} className="w-full" size="lg" onClick={() => navigate('/pricing')}>
                         {tier.cta}
                       </Button>
                     </div>
@@ -345,7 +350,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-24 sm:py-32">
+        <section className="py-24 sm:py-32 bg-white/40 backdrop-blur-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -354,23 +359,38 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 Frequently Asked Questions
               </h2>
-              <p className="mt-4 text-lg leading-8 text-slate-600">
+              <p className="mt-4 text-lg leading-8 text-slate-700">
                 Have questions? We've got answers. If you have any other questions, feel free to reach out.
               </p>
             </motion.div>
             <div className="mt-12 space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="bg-white/60 border border-slate-200/80 rounded-lg">
+                <motion.div 
+                  key={index} 
+                  className="glass-card rounded-xl overflow-hidden"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
                   <button
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="flex items-center justify-between w-full p-6 text-left"
+                    className="flex items-center justify-between w-full p-6 text-left hover:bg-white/40 transition-colors rounded-xl"
                   >
-                    <span className="text-lg font-semibold text-slate-800">{faq.question}</span>
+                    <span className="text-lg font-bold text-gray-900 pr-4">{faq.question}</span>
                     <span className="ml-6 flex-shrink-0">
-                      {openFaq === index ? <MinusIcon className="h-6 w-6 text-primary" /> : <PlusIcon className="h-6 w-6 text-slate-500" />}
+                      {openFaq === index ? (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                          <MinusIcon className="h-5 w-5 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-white/60 border border-primary/20 flex items-center justify-center">
+                          <PlusIcon className="h-5 w-5 text-primary" />
+                        </div>
+                      )}
                     </span>
                   </button>
                   <AnimatePresence>
@@ -382,13 +402,13 @@ const LandingPage: React.FC = () => {
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                         className="overflow-hidden"
                       >
-                        <div className="px-6 pb-6 text-slate-600">
+                        <div className="px-6 pb-6 text-slate-700 leading-relaxed border-t border-white/20 pt-4">
                           {faq.answer}
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

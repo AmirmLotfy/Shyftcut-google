@@ -29,33 +29,54 @@ const QuizCard: React.FC<{
 
     return (
         <motion.div 
-            className={`p-5 rounded-2xl border border-gray-200 border-l-4 bg-white flex flex-col justify-between ${border}`}
-            whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -2px rgba(0,0,0,0.04)"}}
+            className={`glass-card p-6 flex flex-col justify-between h-full border-l-4 ${
+                !latestResult ? 'border-l-slate-300' :
+                latestResult.passed ? 'border-l-green-500' : 'border-l-yellow-500'
+            }`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -4 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         >
             <div>
-                <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-gray-800">{quiz.title}</h4>
-                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full bg-opacity-20 ${
-                        !latestResult ? 'bg-slate-200 text-slate-700' :
-                        latestResult.passed ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
+                <div className="flex justify-between items-start gap-3 mb-4">
+                    <h4 className="font-bold text-gray-900 text-lg leading-tight flex-1">{quiz.title}</h4>
+                    <span className={`px-3 py-1 text-xs font-bold rounded-lg backdrop-blur-sm border flex-shrink-0 ${
+                        !latestResult ? 'bg-slate-100/80 text-slate-700 border-slate-200/50' :
+                        latestResult.passed ? 'bg-green-100/80 text-green-800 border-green-200/50' : 
+                        'bg-yellow-100/80 text-yellow-800 border-yellow-200/50'
                     }`}>{label}</span>
                 </div>
-                <div className="flex items-center space-x-4 mt-2 text-sm text-slate-600">
-                    <span className="flex items-center">
-                        <StarIcon className="w-4 h-4 mr-1 text-yellow-500" />
+                <div className="flex items-center flex-wrap gap-4 mt-3 text-sm text-slate-600">
+                    <span className="flex items-center backdrop-blur-sm bg-white/40 px-2.5 py-1 rounded-lg border border-white/30">
+                        <StarIcon className="w-4 h-4 mr-1.5 text-yellow-500" />
                         Difficulty: {quiz.difficulty}/3
                     </span>
-                    <span className="flex items-center">
-                        <ClockIcon className="w-4 h-4 mr-1" />
+                    <span className="flex items-center backdrop-blur-sm bg-white/40 px-2.5 py-1 rounded-lg border border-white/30">
+                        <ClockIcon className="w-4 h-4 mr-1.5" />
                         {quiz.questions.length} Questions
                     </span>
                 </div>
                 {latestResult && (
-                    <p className={`text-sm font-bold mt-2 ${text}`}>Best Score: {latestResult.percentage}%</p>
+                    <motion.div 
+                        className={`mt-4 p-3 rounded-xl backdrop-blur-sm border ${
+                            latestResult.passed 
+                                ? 'bg-green-50/80 border-green-200/50' 
+                                : 'bg-yellow-50/80 border-yellow-200/50'
+                        }`}
+                        initial={{ scale: 0.95 }}
+                        animate={{ scale: 1 }}
+                    >
+                        <p className={`text-sm font-bold ${text}`}>Best Score: {latestResult.percentage}%</p>
+                    </motion.div>
                 )}
             </div>
-            <Button onClick={onStart} className="w-full mt-4" variant={latestResult?.passed ? "outline" : "primary"}>
-                {latestResult?.passed ? 'Review' : 'Start Quiz'}
+            <Button 
+                onClick={onStart} 
+                className="w-full mt-4" 
+                variant={latestResult?.passed ? "glass-primary" : "primary"}
+            >
+                {latestResult?.passed ? 'Review Quiz' : 'Start Quiz'}
             </Button>
         </motion.div>
     );
@@ -98,14 +119,20 @@ const QuizSelector: React.FC<QuizSelectorProps> = ({ quizzes, milestoneId, roadm
     }
 
     return (
-        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-6">
-            {quizzes.map(quiz => (
-                <QuizCard 
-                    key={quiz.id} 
-                    quiz={quiz} 
-                    latestResult={results.get(quiz.id)}
-                    onStart={() => setActiveQuiz(quiz)}
-                />
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {quizzes.map((quiz, index) => (
+                <motion.div
+                    key={quiz.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                >
+                    <QuizCard 
+                        quiz={quiz} 
+                        latestResult={results.get(quiz.id)}
+                        onStart={() => setActiveQuiz(quiz)}
+                    />
+                </motion.div>
             ))}
         </div>
     );

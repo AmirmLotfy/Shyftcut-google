@@ -157,7 +157,7 @@ const RoadmapDashboardPage: React.FC = () => {
 
     return (
         <>
-        <div className="flex h-screen bg-gray-50 font-sans">
+        <div className="flex h-screen font-sans">
             <RoadmapSidebar 
                 roadmap={roadmap} 
                 milestones={milestones}
@@ -184,7 +184,15 @@ const RoadmapDashboardPage: React.FC = () => {
                         onDelete={handleDelete}
                         isArchiving={isArchiving || isDeleting}
                     />
-                    {actionError && <p className="text-center text-red-500 my-4">{actionError}</p>}
+                    {actionError && (
+                        <motion.div 
+                            className="glass-card p-4 mb-4 border-red-200 bg-red-50/80"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <p className="text-center text-red-600">{actionError}</p>
+                        </motion.div>
+                    )}
                     
                     <div className="mt-8">
                         <div className="max-w-4xl mx-auto">

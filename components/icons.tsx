@@ -138,8 +138,13 @@ const ShyftcutIconSVG = (props: React.SVGProps<SVGSVGElement>) => (
 
 export const Logo = ({ className }: { className?: string }) => (
   <div className={`flex items-center gap-3 ${className}`}>
-    <ShyftcutIconSVG className="h-full w-auto" />
-    <span className="text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+    <img 
+      src="/assets/logo.png" 
+      alt="Shyftcut Logo" 
+      className="h-full w-auto object-contain"
+      style={{ maxHeight: '100%' }}
+    />
+    <span className="text-2xl font-extrabold tracking-tight text-gray-900">
       Shyftcut
     </span>
   </div>

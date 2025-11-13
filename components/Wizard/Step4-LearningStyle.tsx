@@ -25,32 +25,43 @@ const Step4LearningStyle: React.FC<StepProps> = ({ formData, handleLearningStyle
                     <motion.button 
                         key={style.id}
                         onClick={() => handleLearningStyleChange(style.name)}
-                        className={`flex items-center p-2 pl-3 pr-4 border-2 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                        className={`flex items-center p-3 pl-4 pr-5 border-2 rounded-full transition-all duration-300 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50
                             ${isSelected(style.name) 
-                                ? 'bg-primary text-white border-primary'
-                                : 'bg-white border-slate-200 text-slate-700 hover:border-primary-300'
+                                ? 'bg-gradient-to-r from-primary to-primary-600 text-white border-primary/40 shadow-lg shadow-primary/30'
+                                : 'glass-card border-white/30 text-slate-700 hover:border-primary/30 hover:shadow-md'
                             }`
                         }
                         aria-pressed={isSelected(style.name)}
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        {style.icon}
-                        <span className="font-semibold text-sm ml-1">{style.name}</span>
+                        <span className="text-lg">{style.icon}</span>
+                        <span className={`font-bold text-sm ml-2 ${isSelected(style.name) ? 'text-white' : 'text-gray-900'}`}>{style.name}</span>
                     </motion.button>
                 ))}
             </div>
             
-            <div className="mt-6 text-sm text-slate-500">
-                <p><strong>Examples:</strong></p>
-                <ul className="list-disc list-inside">
-                    {LEARNING_STYLES_OPTIONS
-                        .filter(style => isSelected(style.name))
-                        .map(style => <li key={style.id}>{style.name}: {style.example}</li>)
-                    }
-                    {formData.learningStyles.length === 0 && <li>Select a style to see examples.</li>}
-                </ul>
-            </div>
+            {formData.learningStyles.length > 0 && (
+                <motion.div 
+                    className="mt-6 glass-card p-4 rounded-xl"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <p className="font-bold text-gray-900 mb-2">Examples:</p>
+                    <ul className="space-y-1 text-sm text-slate-600">
+                        {LEARNING_STYLES_OPTIONS
+                            .filter(style => isSelected(style.name))
+                            .map(style => (
+                                <li key={style.id} className="flex items-start">
+                                    <span className="text-primary mr-2">•</span>
+                                    <span><strong className="text-gray-900">{style.name}:</strong> {style.example}</span>
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </motion.div>
+            )}
 
             <div className="mt-8 flex justify-between items-center">
                 <Button variant="outline" onClick={handleBack}>

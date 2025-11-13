@@ -19,7 +19,7 @@ const ParsedText: React.FC<{ text: string }> = ({ text }) => {
                     return <strong key={index}>{part.slice(8, -9)}</strong>;
                 }
                 if (part.startsWith('<code>')) {
-                    return <code key={index} className="bg-slate-800 text-secondary-400 font-mono py-0.5 px-1.5 rounded-md text-sm">{part.slice(6, -7)}</code>;
+                    return <code key={index} className="backdrop-blur-sm bg-slate-100/80 text-primary font-mono py-0.5 px-1.5 rounded-md text-sm border border-slate-200/50">{part.slice(6, -7)}</code>;
                 }
                 return part;
             })}
@@ -30,7 +30,7 @@ const ParsedText: React.FC<{ text: string }> = ({ text }) => {
 const ContentRenderer: React.FC<{ content: ContentPart[] }> = ({ content }) => {
     const navigate = useNavigate();
     return (
-        <div className="prose prose-lg max-w-none prose-slate prose-invert mt-8">
+        <div className="prose prose-lg max-w-none prose-slate mt-8 text-slate-700">
             {content.map((part, index) => {
                 switch (part.type) {
                     case 'lead':
@@ -71,36 +71,37 @@ const BlogPostPage: React.FC = () => {
     }
 
     return (
-        <div className="bg-slate-900">
+        <div className="min-h-screen gradient-primary">
             <Header />
-            <main className="pt-8 pb-16 lg:pt-16 lg:pb-24 bg-slate-900 antialiased">
+            <main className="pt-8 pb-16 lg:pt-16 lg:pb-24 antialiased">
                 <div className="flex justify-between px-4 mx-auto max-w-screen-xl ">
                     <article className="mx-auto w-full max-w-3xl">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, ease: 'easeOut' }}
+                            className="glass-card p-8 lg:p-12"
                         >
-                            <div className="mb-4">
-                                <Link to="/blog" className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-primary transition-colors">
+                            <div className="mb-6">
+                                <Link to="/blog" className="inline-flex items-center text-sm font-semibold text-slate-600 hover:text-primary transition-colors backdrop-blur-sm bg-white/40 px-3 py-2 rounded-lg border border-white/30">
                                     <ArrowLeftIcon className="w-4 h-4 mr-2" />
                                     All Posts
                                 </Link>
                             </div>
-                            <header className="mb-4 lg:mb-6 not-format">
+                            <header className="mb-8 lg:mb-10 not-format border-b border-white/20 pb-6">
                                 <address className="flex items-center mb-6 not-italic">
-                                    <div className="inline-flex items-center mr-3 text-sm text-slate-100">
-                                        <div className="mr-4 w-16 h-16 rounded-full bg-slate-700 flex items-center justify-center font-bold text-primary text-xl">
+                                    <div className="inline-flex items-center mr-3 text-sm">
+                                        <div className="mr-4 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-white text-xl backdrop-blur-sm border border-white/30 shadow-lg">
                                             {post.author.split(' ').map(n => n[0]).join('')}
                                         </div>
                                         <div>
-                                            <span className="text-xl font-bold text-slate-100">{post.author}</span>
-                                            <p className="text-base text-slate-400">{post.date}</p>
+                                            <span className="text-xl font-bold text-gray-900">{post.author}</span>
+                                            <p className="text-base text-slate-600">{post.date}</p>
                                         </div>
                                     </div>
                                 </address>
-                                <p className="text-base font-semibold leading-7 text-primary">{post.category}</p>
-                                <h1 className="mb-4 text-3xl font-extrabold leading-tight text-slate-50 lg:mb-6 lg:text-5xl">{post.title}</h1>
+                                <p className="text-base font-bold uppercase tracking-wider leading-7 text-primary mb-2">{post.category}</p>
+                                <h1 className="mb-4 text-3xl font-extrabold leading-tight text-gray-900 lg:mb-6 lg:text-5xl">{post.title}</h1>
                             </header>
                             
                             <figure>

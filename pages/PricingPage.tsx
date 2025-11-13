@@ -107,20 +107,41 @@ const PricingPage: React.FC = () => {
 
 
   return (
-    <div className="bg-slate-50">
+    <div className="gradient-primary min-h-screen">
       <Header />
       <main className="py-24 sm:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Limited Time Offer!</span>
             </h1>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
+            <p className="mt-6 text-lg leading-8 text-slate-700">
               To celebrate our launch, all plans are 100% free for the first month. No credit card required.
             </p>
-          </div>
-          {error && <p className="text-center text-red-500 mt-4">{error}</p>}
-          {successMessage && <p className="text-center text-green-600 mt-4">{successMessage}</p>}
+          </motion.div>
+          {error && (
+            <motion.div 
+              className="glass-card p-4 mt-4 border-red-200 bg-red-50/80 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-center text-red-600">{error}</p>
+            </motion.div>
+          )}
+          {successMessage && (
+            <motion.div 
+              className="glass-card p-4 mt-4 border-green-200 bg-green-50/80 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-center text-green-600">{successMessage}</p>
+            </motion.div>
+          )}
           <div className="mt-20 grid max-w-lg mx-auto gap-8 lg:max-w-none lg:grid-cols-3">
             {tiers.map((tier, index) => (
               <motion.div
@@ -128,48 +149,48 @@ const PricingPage: React.FC = () => {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`relative flex flex-col rounded-2xl shadow-lg border ${tier.mostPopular ? 'border-transparent' : 'border-slate-200'}`}
+                className={`relative flex flex-col rounded-2xl shadow-xl border-2 ${tier.mostPopular ? 'border-transparent' : 'border-white/30 glass-card'}`}
               >
                 {tier.mostPopular && (
-                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary to-secondary animate-glow" style={{ filter: 'blur(6px)' }} />
+                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary to-secondary animate-glow" style={{ filter: 'blur(8px)' }} />
                 )}
-                <div className="relative flex flex-col bg-white rounded-2xl h-full">
+                <div className={`relative flex flex-col rounded-2xl h-full ${tier.mostPopular ? 'glass-card bg-white/90' : 'bg-white/70 backdrop-blur-sm'}`}>
                   <div className="p-8">
-                    <h3 className="text-2xl font-semibold text-slate-900">{tier.name}</h3>
+                    <h3 className="text-2xl font-bold text-gray-900">{tier.name}</h3>
                     {tier.mostPopular && (
-                      <p className="absolute top-0 -translate-y-1/2 transform bg-gradient-to-r from-primary to-secondary px-3 py-1 text-sm font-semibold text-white rounded-full shadow-md">Most Popular</p>
+                      <p className="absolute top-0 -translate-y-1/2 transform bg-gradient-to-r from-primary to-secondary px-4 py-1.5 text-xs font-bold text-white rounded-full shadow-lg shadow-primary/30 uppercase tracking-wider">Most Popular</p>
                     )}
-                    <p className="mt-4 text-slate-500">{tier.description}</p>
+                    <p className="mt-4 text-slate-600 font-medium">{tier.description}</p>
                     <div className="mt-6">
                       {tier.name === 'Pro' ? (
                         <div>
-                            <span className="text-4xl font-bold tracking-tight text-slate-900">Free</span>
-                            <span className="text-lg font-medium text-slate-500"> for 1 month</span>
-                            <p className="text-sm text-slate-400 mt-1">Then {tier.originalPrice}{tier.frequency}</p>
+                            <span className="text-4xl font-bold tracking-tight text-gray-900">Free</span>
+                            <span className="text-lg font-medium text-slate-600"> for 1 month</span>
+                            <p className="text-sm text-slate-500 mt-1">Then {tier.originalPrice}{tier.frequency}</p>
                         </div>
                       ) : (
-                         <p className="text-4xl font-bold tracking-tight text-slate-900">
+                         <p className="text-4xl font-bold tracking-tight text-gray-900">
                             {tier.price}
-                            <span className="text-lg font-medium text-slate-500">{tier.frequency}</span>
+                            <span className="text-lg font-medium text-slate-600">{tier.frequency}</span>
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="flex-1 p-8 border-t border-slate-200">
+                  <div className="flex-1 p-8 border-t border-white/20">
                     <ul role="list" className="space-y-4">
                       {tier.features.map((feature) => (
                         <li key={feature} className="flex items-start">
-                          <div className="flex-shrink-0">
-                            <CheckCircleIcon className="h-6 w-6 text-green-500" aria-hidden="true" />
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30 mr-3">
+                            <CheckCircleIcon className="h-4 w-4 text-white" aria-hidden="true" />
                           </div>
-                          <p className="ml-3 text-base text-slate-700">{feature}</p>
+                          <p className="ml-1 text-base text-slate-700 font-medium">{feature}</p>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div className="p-8 mt-auto">
                     <Button 
-                      variant={tier.mostPopular ? 'primary' : 'outline'} 
+                      variant={tier.mostPopular ? 'primary' : 'glass-primary'} 
                       className="w-full" 
                       size="lg"
                       onClick={() => handlePlanSelection(tier)}

@@ -45,31 +45,38 @@ const RoadmapHeader: React.FC<RoadmapHeaderProps> = ({ roadmap, milestones, comp
     }, [milestones, completionStatus]);
 
     return (
-        <div className="mb-10">
+        <motion.div 
+            className="mb-10 glass-card p-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+        >
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6 flex-1 min-w-0">
                     <div className="flex-shrink-0">
                         <RadialProgress progress={overallProgress} />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-base font-semibold text-primary">{roadmap.track}</p>
-                        <h1 className="text-4xl font-bold text-slate-900">{roadmap.title}</h1>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 truncate">{roadmap.title}</h1>
                          {currentMilestone && (
-                            <p className="text-base text-slate-500 mt-2">
-                                Current Focus: <span className="font-semibold text-slate-700">{currentMilestone.title}</span>
+                            <p className="text-base text-slate-600 mt-2">
+                                Current Focus: <span className="font-semibold text-slate-800">{currentMilestone.title}</span>
                             </p>
                         )}
                     </div>
                 </div>
-                <div className="flex space-x-2 mt-4 sm:mt-0 self-start sm:self-center">
-                    <Button variant="ghost" size="sm" aria-label="Share" onClick={onShare}><ShareIcon className="w-6 h-6" /></Button>
-                    <Button variant="ghost" size="sm" aria-label="Archive" onClick={onArchive} disabled={isArchiving}>
-                        {isArchiving ? <Spinner size="sm"/> : <ArchiveBoxIcon className="w-6 h-6" />}
+                <div className="flex space-x-2 mt-4 sm:mt-0 self-start sm:self-center flex-shrink-0">
+                    <Button variant="glass" size="sm" aria-label="Share" onClick={onShare} className="!p-2.5">
+                        <ShareIcon className="w-5 h-5" />
+                    </Button>
+                    <Button variant="glass" size="sm" aria-label="Archive" onClick={onArchive} disabled={isArchiving} className="!p-2.5">
+                        {isArchiving ? <Spinner size="sm"/> : <ArchiveBoxIcon className="w-5 h-5" />}
                     </Button>
                      {/* Settings Dropdown */}
                     <div className="relative" ref={settingsRef}>
-                        <Button variant="ghost" size="sm" aria-label="Settings" onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
-                            <Cog6ToothIcon className="w-6 h-6" />
+                        <Button variant="glass" size="sm" aria-label="Settings" onClick={() => setIsSettingsOpen(!isSettingsOpen)} className="!p-2.5">
+                            <Cog6ToothIcon className="w-5 h-5" />
                         </Button>
                         <AnimatePresence>
                             {isSettingsOpen && (
@@ -78,23 +85,21 @@ const RoadmapHeader: React.FC<RoadmapHeaderProps> = ({ roadmap, milestones, comp
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                                    className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                                    className="absolute right-0 mt-2 w-48 origin-top-right glass-modal py-1 z-10"
                                 >
-                                    <div className="py-1">
-                                        <button onClick={() => { onEdit(); setIsSettingsOpen(false); }} className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-primary rounded-md transition-colors">
-                                            <PencilIcon className="w-4 h-4" /> Edit Roadmap
-                                        </button>
-                                        <button onClick={() => { onDelete(); setIsSettingsOpen(false); }} className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors">
-                                            <TrashIcon className="w-4 h-4" /> Delete Roadmap
-                                        </button>
-                                    </div>
+                                    <button onClick={() => { onEdit(); setIsSettingsOpen(false); }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-white/60 hover:text-primary rounded-lg transition-colors">
+                                        <PencilIcon className="w-4 h-4" /> Edit Roadmap
+                                    </button>
+                                    <button onClick={() => { onDelete(); setIsSettingsOpen(false); }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50/60 rounded-lg transition-colors">
+                                        <TrashIcon className="w-4 h-4" /> Delete Roadmap
+                                    </button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

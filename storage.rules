@@ -1,1 +1,86 @@
-ощ^
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if existing file belongs to user (for delete operations)
+    function isOwnerOfExisting(fileName) {
+      return isAuthenticated() && 
+             fileName.matches(request.auth.uid + '-.*');
+    }
+    
+    // Helper function to validate file type
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/(png|jpeg|jpg|svg\\+xml|webp|x-icon|ico)');
+    }
+    
+    // Helper function to validate file size (max 5MB)
+    function isWithinSizeLimit() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // Avatars folder: Users can upload and read their own avatar
+    match /avatars/{userId}/{fileName} {
+      // Helper function to check if filename is a valid avatar filename
+      function isValidAvatarFilename() {
+        return fileName == 'avatar.jpg' || 
+               fileName == 'avatar.jpeg' || 
+               fileName == 'avatar.png' || 
+               fileName == 'avatar.webp';
+      }
+      
+      // Read: Users can read any avatar (for displaying in UI)
+      allow read: if isAuthenticated();
+      
+      // Write: Users can only upload their own avatar
+      allow write: if isAuthenticated() 
+                   && userId == request.auth.uid
+                   && isValidAvatarFilename()
+                   && isValidImageType()
+                   && isWithinSizeLimit();
+      
+      // Delete: Users can only delete their own avatar
+      allow delete: if isAuthenticated() 
+                    && userId == request.auth.uid;
+    }
+    
+    // Brand asset folders: logos, favicons, og-images
+    // Users can only upload files with their UID in the filename
+    match /{folder}/{fileName} {
+      // Only allow uploads to specific folders
+      function isValidFolder() {
+        return folder == 'logos' || folder == 'favicons' || folder == 'og-images';
+      }
+      
+      // Read: Users can read files in valid folders (their own and others for preview)
+      allow read: if isAuthenticated() && isValidFolder();
+      
+      // Write: Users can only upload files with their UID prefix
+      allow write: if isAuthenticated() 
+                   && isValidFolder()
+                   && fileName.matches(request.auth.uid + '-.*')
+                   && isValidImageType()
+                   && isWithinSizeLimit();
+      
+      // Delete: Users can only delete their own files
+      allow delete: if isAuthenticated() 
+                    && isValidFolder()
+                    && isOwnerOfExisting(fileName);
+    }
+    
+    // Readme/assets folder - public read, no writes from client
+    match /readme-assets/{fileName} {
+      allow read: if true; // Public read for marketing assets
+      allow write: if false; // Only via server/console
+    }
+    
+    // Default: Deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

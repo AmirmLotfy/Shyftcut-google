@@ -74,35 +74,68 @@ const FocusModeTimer: React.FC<FocusModeTimerProps> = ({ task, onClose, onSessio
     };
 
     return (
-        <div 
-            className="fixed inset-0 bg-slate-900/70 backdrop-blur-lg z-50 flex items-center justify-center p-4"
+        <motion.div 
+            className="fixed inset-0 glass-overlay z-50 flex items-center justify-center p-4"
             aria-modal="true"
             role="dialog"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleStopAndClose}
         >
             <motion.div 
                 initial={{ y: 20, opacity: 0, scale: 0.95 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: 20, opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-2xl shadow-xl w-full max-w-md relative"
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className="glass-modal w-full max-w-md relative"
+                onClick={(e) => e.stopPropagation()}
             >
-                <button onClick={handleStopAndClose} className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors" aria-label="Close focus mode">
-                    <XIcon className="w-6 h-6" />
-                </button>
-                <div className="p-8 text-center">
-                    <p className={`font-semibold uppercase text-sm tracking-wider ${mode === 'work' ? 'text-primary' : 'text-green-600'}`}>
+                <motion.button 
+                    onClick={handleStopAndClose} 
+                    className="absolute top-4 right-4 p-2 rounded-full backdrop-blur-sm bg-white/60 text-slate-600 hover:bg-white/80 border border-white/30 transition-all z-10" 
+                    aria-label="Close focus mode"
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                >
+                    <XIcon className="w-5 h-5" />
+                </motion.button>
+                <div className="p-8 sm:p-10 text-center">
+                    <motion.p 
+                        className={`font-bold uppercase text-xs tracking-widest backdrop-blur-sm inline-block px-4 py-2 rounded-full border ${
+                            mode === 'work' 
+                                ? 'bg-primary/20 text-primary border-primary/30' 
+                                : 'bg-green-100/80 text-green-700 border-green-200/50'
+                        }`}
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        key={mode}
+                    >
                         {mode === 'work' ? 'Focus Session' : 'Break Time'}
-                    </p>
-                    <p className="mt-2 text-lg text-slate-700 font-medium truncate">
+                    </motion.p>
+                    <p className="mt-4 text-lg text-slate-800 font-semibold truncate max-w-xs mx-auto">
                         {mode === 'work' ? task.title : "Time to recharge!"}
                     </p>
                     
-                    <div className="my-8 relative w-52 h-52 mx-auto flex items-center justify-center">
-                        <svg className="absolute inset-0" viewBox="0 0 100 100">
-                           <circle cx="50" cy="50" r="45" className="stroke-slate-200" strokeWidth="10" fill="transparent" />
+                    <div className="my-8 relative w-64 h-64 sm:w-72 sm:h-72 mx-auto flex items-center justify-center">
+                        <div className={`absolute inset-0 rounded-full blur-2xl opacity-30 ${
+                            mode === 'work' ? 'bg-primary' : 'bg-green-500'
+                        }`} />
+                        <svg className="absolute inset-0 drop-shadow-lg" viewBox="0 0 100 100">
+                           <circle 
+                               cx="50" 
+                               cy="50" 
+                               r="45" 
+                               className="stroke-white/30 backdrop-blur-sm" 
+                               strokeWidth="8" 
+                               fill="transparent" 
+                           />
                            <motion.circle 
                              cx="50" cy="50" r="45" 
-                             className={mode === 'work' ? 'stroke-primary' : 'stroke-green-500'}
-                             strokeWidth="10" 
+                             className={mode === 'work' 
+                                 ? 'stroke-primary drop-shadow-lg' 
+                                 : 'stroke-green-500 drop-shadow-lg'}
+                             strokeWidth="8" 
                              fill="transparent"
                              strokeLinecap="round"
                              transform="rotate(-90 50 50)"
@@ -112,21 +145,36 @@ const FocusModeTimer: React.FC<FocusModeTimerProps> = ({ task, onClose, onSessio
                              transition={{ duration: 1, ease: 'linear' }}
                            />
                         </svg>
-                         <h2 className="text-5xl font-bold text-slate-900 tracking-tight">{formatTime(time)}</h2>
+                        <motion.div
+                            className="relative z-10"
+                            animate={isActive ? { scale: [1, 1.05, 1] } : {}}
+                            transition={{ duration: 2, repeat: isActive ? Infinity : 0 }}
+                        >
+                            <h2 className={`text-6xl sm:text-7xl font-bold tracking-tight ${
+                                mode === 'work' ? 'text-slate-900' : 'text-green-700'
+                            }`}>
+                                {formatTime(time)}
+                            </h2>
+                        </motion.div>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4">
+                    <div className="flex items-center justify-center gap-3">
                         <Button 
                             onClick={toggleTimer} 
                             size="lg" 
-                            className="w-40 !py-3"
+                            className="w-40 !py-3 shadow-lg"
+                            variant={mode === 'work' ? 'primary' : 'secondary'}
                         >
-                            {isActive ? <><PauseIcon className="w-5 h-5 mr-2" /> Pause</> : <><PlayIcon className="w-5 h-5 mr-2" /> Start</>}
+                            {isActive ? (
+                                <><PauseIcon className="w-5 h-5 mr-2" /> Pause</>
+                            ) : (
+                                <><PlayIcon className="w-5 h-5 mr-2" /> Start</>
+                            )}
                         </Button>
                         <Button 
                             onClick={handleStopAndClose} 
-                            variant="ghost"
-                            className="!text-slate-500 hover:!bg-slate-100"
+                            variant="glass"
+                            className="!p-3"
                             aria-label="Stop and close"
                         >
                             <StopIcon className="w-6 h-6"/>
@@ -134,7 +182,7 @@ const FocusModeTimer: React.FC<FocusModeTimerProps> = ({ task, onClose, onSessio
                     </div>
                 </div>
             </motion.div>
-        </div>
+        </motion.div>
     );
 };
 

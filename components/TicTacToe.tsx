@@ -11,7 +11,7 @@ import { ArrowPathIcon, SparklesIcon, CpuChipIcon, UserGroupIcon, CopyIcon, Chec
 const Square: React.FC<{ value: 'X' | 'O' | null; onClick: () => void; isWinning: boolean; }> = ({ value, onClick, isWinning }) => (
     <button
         className={`w-full h-full rounded-lg flex items-center justify-center relative transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-50 focus:ring-primary ${
-            isWinning ? 'bg-primary-100' : 'bg-white hover:bg-slate-100'
+            isWinning ? 'bg-primary/20' : 'bg-white hover:bg-slate-50'
         }`}
         onClick={onClick}
         aria-label={`Square ${value || 'empty'}`}
@@ -22,7 +22,7 @@ const Square: React.FC<{ value: 'X' | 'O' | null; onClick: () => void; isWinning
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.5, opacity: 0 }}
-                    className={`text-6xl lg:text-7xl font-bold select-none ${
+                    className={`text-4xl sm:text-5xl font-bold select-none ${
                         value === 'X' ? 'text-primary' : 'text-secondary'
                     }`}
                 >
@@ -34,23 +34,23 @@ const Square: React.FC<{ value: 'X' | 'O' | null; onClick: () => void; isWinning
 );
 
 const GameStatus: React.FC<{ status: string; winner: 'X' | 'O' | null }> = ({ status, winner }) => (
-    <p className={`text-center text-lg font-semibold h-7 transition-colors duration-300 ${
-        winner === 'X' ? 'text-green-500' : winner === 'O' ? 'text-red-500' : 'text-slate-500'
+    <p className={`text-center text-sm font-bold h-6 transition-colors duration-300 ${
+        winner === 'X' ? 'text-green-600' : winner === 'O' ? 'text-red-600' : 'text-slate-600'
     }`}>
         {status}
     </p>
 );
 
 const Scoreboard: React.FC<{ scores: { player: number; ai: number } }> = ({ scores }) => (
-    <div className="flex justify-between items-center text-xl font-bold text-slate-700 bg-slate-100 p-3 rounded-lg">
+    <div className="flex justify-between items-center text-base font-bold text-slate-700 bg-white/60 backdrop-blur-sm border border-white/30 p-2.5 rounded-xl">
         <div className="text-center w-1/2">
-            <span className="text-sm font-medium text-primary">You (X)</span>
-            <span className="block text-3xl">{scores.player}</span>
+            <span className="text-xs font-semibold text-primary">You (X)</span>
+            <span className="block text-2xl">{scores.player}</span>
         </div>
-        <div className="w-px h-10 bg-slate-300" />
+        <div className="w-px h-8 bg-slate-300/50" />
         <div className="text-center w-1/2">
-            <span className="text-sm font-medium text-secondary">AI (O)</span>
-            <span className="block text-3xl">{scores.ai}</span>
+            <span className="text-xs font-semibold text-secondary">AI (O)</span>
+            <span className="block text-2xl">{scores.ai}</span>
         </div>
     </div>
 );
@@ -258,21 +258,21 @@ const TicTacToe: React.FC = () => {
     const isGameOver = !!winnerInfo.winner || isDraw;
 
     return (
-        <div className="w-full max-w-sm mx-auto p-4 sm:p-6 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xl">
+        <div className="w-full max-w-xs mx-auto p-3 sm:p-4 glass-card rounded-2xl shadow-xl">
             <Scoreboard scores={scores} />
             
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="mt-4 p-2 pl-3 bg-primary-50 border-l-4 border-primary rounded-lg shadow-inner"
+                className="mt-3 p-2 pl-2.5 bg-primary/10 border-l-2 border-primary rounded-lg"
             >
                 <div className="flex items-start">
-                    <SparklesIcon className="w-5 h-5 text-primary mr-2 flex-shrink-0" />
+                    <SparklesIcon className="w-4 h-4 text-primary mr-1.5 flex-shrink-0 mt-0.5" />
                     <div>
-                        <h4 className="font-bold text-sm text-slate-800">AI Challenge: Victory Unlocks a Prize!</h4>
-                        <p className="text-sm text-slate-600">
-                            Outsmart our AI to win an exclusive <strong className="font-semibold text-primary">50% discount</strong> on 3 months of Shyftcut Pro.
+                        <h4 className="font-bold text-xs text-gray-900">AI Challenge: Win 50% Off!</h4>
+                        <p className="text-xs text-slate-700 mt-0.5">
+                            Beat our AI to get <strong className="font-semibold text-primary">50% off</strong> 3 months of Pro.
                         </p>
                     </div>
                 </div>
@@ -282,8 +282,8 @@ const TicTacToe: React.FC = () => {
                 <GameStatus status={status} winner={winnerInfo.winner} />
             </div>
 
-            <div className="relative w-full aspect-square max-w-[350px] mx-auto bg-slate-200 p-2 sm:p-3 rounded-lg">
-                 <div className="grid grid-cols-3 grid-rows-3 gap-2 sm:gap-3 w-full h-full">
+            <div className="relative w-full max-w-[340px] mx-auto bg-slate-100 p-1.5 rounded-xl" style={{ height: '280px' }}>
+                 <div className="grid grid-cols-3 grid-rows-3 gap-1.5 w-full h-full">
                     {squares.map((square, i) => (
                         <Square
                             key={i}
@@ -301,8 +301,8 @@ const TicTacToe: React.FC = () => {
             </div>
             
             <div className="mt-2 flex justify-center">
-                <Button variant="ghost" onClick={handleReset} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100">
-                    <ArrowPathIcon className="w-5 h-5 mr-2" /> Reset Game
+                <Button variant="ghost" onClick={handleReset} size="sm" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                    <ArrowPathIcon className="w-4 h-4 mr-1.5" /> Reset
                 </Button>
             </div>
         </div>

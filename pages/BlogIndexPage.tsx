@@ -8,7 +8,7 @@ import { allPosts } from '../constants/blogPosts';
 
 const BlogIndexPage: React.FC = () => {
     return (
-        <div className="bg-slate-900">
+        <div className="min-h-screen gradient-primary">
             <Header />
             <main className="py-24 sm:py-32">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,10 +18,10 @@ const BlogIndexPage: React.FC = () => {
                         transition={{ duration: 0.5 }}
                         className="text-center"
                     >
-                        <h1 className="text-4xl font-extrabold tracking-tight text-slate-50 sm:text-5xl">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
                             The Shyftcut Blog
                         </h1>
-                        <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-slate-400">
+                        <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-slate-600">
                             Insights, tutorials, and career advice from our team and industry experts to accelerate your learning journey.
                         </p>
                     </motion.div>
@@ -35,15 +35,18 @@ const BlogIndexPage: React.FC = () => {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
                                 <Link to={`/blog/${post.slug}`} className="block group">
-                                    <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-2 h-full flex flex-col">
+                                    <motion.div 
+                                        className="glass-card overflow-hidden h-full flex flex-col"
+                                        whileHover={{ y: -8 }}
+                                    >
                                         <img className="h-48 w-full object-cover" src={post.imageUrl} alt={`Featured image for ${post.title}`} />
                                         <div className="p-6 flex flex-col flex-grow">
-                                            <p className="text-sm font-semibold text-primary">{post.category}</p>
-                                            <h3 className="mt-2 text-xl font-bold text-slate-100 group-hover:text-primary transition-colors">{post.title}</h3>
-                                            <p className="mt-3 text-base text-slate-400 line-clamp-3 flex-grow">{post.excerpt}</p>
+                                            <p className="text-sm font-bold text-primary uppercase tracking-wider">{post.category}</p>
+                                            <h3 className="mt-2 text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">{post.title}</h3>
+                                            <p className="mt-3 text-base text-slate-600 line-clamp-3 flex-grow leading-relaxed">{post.excerpt}</p>
                                             <div className="mt-4 text-sm font-semibold text-primary group-hover:underline">Read more &rarr;</div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 </Link>
                             </motion.div>
                         ))}

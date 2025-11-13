@@ -134,10 +134,10 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-secondary-50 animate-background-pan" />
+    <div className="min-h-screen gradient-primary flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-white/80 to-secondary/20 animate-background-pan" />
         <div className="absolute top-0 left-0 p-4 sm:p-6 z-10">
-            <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary transition-colors">
+            <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-700 hover:text-primary transition-colors backdrop-blur-sm bg-white/40 px-3 py-2 rounded-lg border border-white/30">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
             </Link>
@@ -150,13 +150,13 @@ const AuthPage: React.FC = () => {
         >
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
             <Logo className="mx-auto h-12 w-auto text-primary" />
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {isLogin ? 'Welcome back' : 'Create your account'}
             </h2>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <div className="bg-white/60 backdrop-blur-lg py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-slate-200/80">
+            <div className="glass-card py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-white/30">
             <form className="space-y-6" onSubmit={handleAuthAction}>
                 {!isLogin && (
                     <FloatingLabelInput id="name" name="name" type="text" value={name} onChange={(e: any) => setName(e.target.value)} required>Full Name</FloatingLabelInput>
@@ -186,10 +186,10 @@ const AuthPage: React.FC = () => {
             <div className="mt-6">
                 <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-300" />
+                    <div className="w-full border-t border-white/30" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-slate-500">Or continue with</span>
+                    <span className="px-2 bg-white/60 backdrop-blur-sm text-slate-700 font-medium rounded">Or continue with</span>
                 </div>
                 </div>
 
@@ -210,10 +210,10 @@ const AuthPage: React.FC = () => {
             <div className="mt-6">
                  <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-300" />
+                        <div className="w-full border-t border-white/30" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-slate-500">Or sign in with a link</span>
+                        <span className="px-2 bg-white/60 backdrop-blur-sm text-slate-700 font-medium rounded">Or sign in with a link</span>
                     </div>
                 </div>
                 <form className="mt-6 space-y-4" onSubmit={handleEmailLinkSignIn}>

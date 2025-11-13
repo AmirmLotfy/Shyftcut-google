@@ -14,27 +14,27 @@ interface RoadmapSidebarProps {
 
 const RoadmapSidebar: React.FC<RoadmapSidebarProps> = ({ roadmap, milestones, selectedMilestoneId, onSelectMilestone, completionStatus }) => {
     return (
-        <aside className="w-80 bg-white border-r border-gray-100 flex-col hidden lg:flex">
-            <div className="h-24 flex items-center px-8 flex-shrink-0">
-                 <Link to="/dashboard">
+        <aside className="glass-sidebar w-80 flex-col hidden lg:flex">
+            <div className="h-24 flex items-center px-8 flex-shrink-0 border-b border-white/20">
+                 <Link to="/dashboard" className="transition-transform hover:scale-105">
                     <Logo className="h-9 w-auto text-slate-900" />
                 </Link>
             </div>
             
-            <div className="flex-shrink-0 px-8 pb-6">
-                <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 mb-4 group">
+            <div className="flex-shrink-0 px-8 pb-6 pt-6 border-b border-white/20">
+                <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-primary mb-4 group transition-colors">
                     <ArrowLeftIcon className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
                     All Roadmaps
                 </Link>
-                <h2 className="text-xl font-bold text-slate-800">{roadmap.title}</h2>
-                <div className="mt-2 flex items-center space-x-2">
-                     <span className="bg-primary-50 text-primary-700 px-2 py-1 text-xs font-medium rounded-md">{roadmap.track}</span>
-                     <span className="bg-gray-100 text-gray-700 px-2 py-1 text-xs font-medium rounded-md">{roadmap.level}</span>
+                <h2 className="text-xl font-bold text-slate-900">{roadmap.title}</h2>
+                <div className="mt-2 flex items-center space-x-2 flex-wrap gap-2">
+                     <span className="backdrop-blur-sm bg-primary/20 text-primary-700 px-2.5 py-1 text-xs font-semibold rounded-lg border border-primary/20">{roadmap.track}</span>
+                     <span className="backdrop-blur-sm bg-slate-100/80 text-slate-700 px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200/50">{roadmap.level}</span>
                 </div>
             </div>
 
-            <nav className="flex-1 overflow-y-auto px-8 py-4">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Milestones</h3>
+            <nav className="flex-1 overflow-y-auto px-8 py-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Milestones</h3>
                 <MilestoneTimeline 
                     milestones={milestones}
                     selectedMilestoneId={selectedMilestoneId}

@@ -7,6 +7,7 @@ export interface UserProfile {
   country: string;
   age: number;
   profileComplete: boolean;
+  avatarUrl?: string | null;
   createdAt: any; // Firebase Timestamp
   lastRoadmapGeneratedAt?: any; // Firebase Timestamp
   preferences: UserPreferences;

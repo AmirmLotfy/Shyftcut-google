@@ -22,12 +22,12 @@ const Footer: React.FC = () => {
   };
   
   const baseClasses = {
-    footer: isBlogPage ? 'bg-slate-900 border-t border-slate-800' : 'bg-gray-50 border-t border-gray-200',
-    descriptionText: isBlogPage ? 'text-slate-400 text-base' : 'text-gray-500 text-base',
-    headingText: isBlogPage ? 'text-sm font-semibold text-slate-500 tracking-wider uppercase' : 'text-sm font-semibold text-gray-400 tracking-wider uppercase',
-    linkText: isBlogPage ? 'text-base text-slate-400 hover:text-white' : 'text-base text-gray-500 hover:text-gray-900',
-    divider: isBlogPage ? 'mt-12 border-t border-slate-800 pt-8' : 'mt-12 border-t border-gray-200 pt-8',
-    copyrightText: isBlogPage ? 'text-base text-slate-500 xl:text-center' : 'text-base text-gray-400 xl:text-center',
+    footer: isBlogPage ? 'bg-slate-900 border-t border-slate-800' : 'bg-white/40 backdrop-blur-sm border-t border-white/30',
+    descriptionText: isBlogPage ? 'text-slate-400 text-base' : 'text-slate-700 text-base font-medium',
+    headingText: isBlogPage ? 'text-sm font-semibold text-slate-500 tracking-wider uppercase' : 'text-sm font-bold text-gray-900 tracking-wider uppercase',
+    linkText: isBlogPage ? 'text-base text-slate-400 hover:text-white' : 'text-base text-slate-700 hover:text-primary font-medium transition-colors',
+    divider: isBlogPage ? 'mt-12 border-t border-slate-800 pt-8' : 'mt-12 border-t border-white/30 pt-8',
+    copyrightText: isBlogPage ? 'text-base text-slate-500 xl:text-center' : 'text-base text-slate-700 xl:text-center font-medium',
   }
 
   return (

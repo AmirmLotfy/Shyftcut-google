@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import Button from '../Button';
 import { ArrowLeftIcon, ArrowRightIcon, PencilIcon } from '../icons';
 import { UserPreferences } from '../../types';
@@ -16,14 +17,20 @@ interface StepProps {
 }
 
 const ReviewItem: React.FC<{ label: string; value: string; onEdit: () => void }> = ({ label, value, onEdit }) => (
-    <div className="flex items-start justify-between py-4">
-        <div>
-            <p className="text-sm font-medium text-slate-500">{label}</p>
-            <p className="text-base font-semibold text-slate-800">{value || 'Not selected'}</p>
+    <div className="flex items-start justify-between py-4 first:pt-0 last:pb-0">
+        <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{label}</p>
+            <p className="text-base font-bold text-gray-900 truncate">{value || 'Not selected'}</p>
         </div>
-        <button onClick={onEdit} className="text-primary hover:text-primary-700 p-2 rounded-md transition-colors hover:bg-primary-50" aria-label={`Edit ${label}`}>
+        <motion.button 
+            onClick={onEdit} 
+            className="ml-4 text-primary hover:text-primary-700 p-2 rounded-lg transition-all backdrop-blur-sm bg-white/40 hover:bg-primary/10 border border-transparent hover:border-primary/20 flex-shrink-0" 
+            aria-label={`Edit ${label}`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+        >
             <PencilIcon className="h-5 w-5" />
-        </button>
+        </motion.button>
     </div>
 );
 
@@ -39,7 +46,7 @@ const Step6Review: React.FC<StepProps> = ({ formData, name, setName, goToStep, h
             <h2 className="text-2xl font-bold text-slate-800 mb-1">Review your selections</h2>
             <p className="text-slate-500 mb-6">One last look before we generate your personalized roadmap.</p>
 
-            <div className="space-y-2 divide-y divide-slate-200 bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div className="glass-card p-6 space-y-4 divide-y divide-white/20">
                 <ReviewItem label="Career Track" value={formData.careerTrack} onEdit={() => goToStep(1)} />
                 <ReviewItem label="Experience Level" value={formData.experienceLevel} onEdit={() => goToStep(2)} />
                 <ReviewItem label="Weekly Commitment" value={`${formData.weeklyHours} hours`} onEdit={() => goToStep(3)} />
@@ -48,10 +55,10 @@ const Step6Review: React.FC<StepProps> = ({ formData, name, setName, goToStep, h
             </div>
 
             <div className="mt-6">
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-2">
                   Confirm your name
                 </label>
-                <div className="mt-1">
+                <div>
                   <input
                     id="name"
                     name="name"
@@ -59,7 +66,8 @@ const Step6Review: React.FC<StepProps> = ({ formData, name, setName, goToStep, h
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                    className="glass-input block w-full px-4 py-2.5 placeholder-slate-400 focus:outline-none sm:text-sm"
+                    placeholder="Enter your full name"
                   />
                 </div>
               </div>

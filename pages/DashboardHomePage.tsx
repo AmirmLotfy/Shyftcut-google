@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -87,31 +86,68 @@ const DashboardHomePage: React.FC = () => {
     const TABS = ['active', 'archived'];
 
     return (
-        <div>
+        <div className="min-h-screen">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
-                    <p className="mt-2 text-lg text-slate-500">Welcome back, {userProfile?.name}! Your learning journey continues here.</p>
+                    <motion.h1 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-bold text-gray-900"
+                    >
+                        Dashboard
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="mt-2 text-lg text-slate-600"
+                    >
+                        Welcome back, {userProfile?.name}! Your learning journey continues here.
+                    </motion.p>
                 </div>
-                <Button onClick={() => navigate('/app/wizard')} size="lg">Create New Roadmap</Button>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <Button onClick={() => navigate('/app/wizard')} size="lg">
+                        Create New Roadmap
+                    </Button>
+                </motion.div>
             </div>
             
-            <div className="flex items-center border-b border-gray-200 mb-6">
+            <div className="flex items-center mb-6 glass-card p-1">
                 {TABS.map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab as 'active' | 'archived')}
-                        className={`relative px-4 py-3 text-base font-semibold capitalize transition-colors ${activeTab === tab ? 'text-primary' : 'text-slate-500 hover:text-slate-800'}`}
+                        className={`relative px-6 py-3 text-base font-semibold capitalize transition-all duration-300 rounded-xl flex-1 ${
+                            activeTab === tab 
+                                ? 'bg-primary/20 text-primary' 
+                                : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                        }`}
                     >
-                        {tab}
-                        {activeTab === tab && (
-                            <motion.div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" layoutId="underline" />
+                        {activeTab === tab ? (
+                            <>
+                                <motion.div 
+                                    className="absolute inset-0 bg-primary/20 rounded-xl"
+                                    layoutId="activeTab"
+                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                />
+                                <span className="relative z-10">{tab}</span>
+                            </>
+                        ) : (
+                            tab
                         )}
                     </button>
                 ))}
             </div>
             
-            {statusUpdateError && <p className="text-center text-red-500 mb-4">{statusUpdateError}</p>}
+            {statusUpdateError && (
+                <div className="glass-card p-4 mb-4 border-red-200 bg-red-50/80">
+                    <p className="text-center text-red-600">{statusUpdateError}</p>
+                </div>
+            )}
 
             <div>
                 <AnimatePresence mode="wait">
@@ -120,27 +156,41 @@ const DashboardHomePage: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.3 }}
                     >
                         {roadmaps.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {roadmaps.map(roadmap => (
-                                    <RoadmapCard 
-                                        key={roadmap.id} 
-                                        roadmap={roadmap} 
-                                        onStatusUpdate={handleStatusUpdate}
-                                    />
+                                {roadmaps.map((roadmap, index) => (
+                                    <motion.div
+                                        key={roadmap.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                                    >
+                                        <RoadmapCard 
+                                            roadmap={roadmap} 
+                                            onStatusUpdate={handleStatusUpdate}
+                                        />
+                                    </motion.div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center bg-white p-12 rounded-2xl border border-gray-200 mt-10">
-                                <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-primary-50">
-                                    <SparklesIcon className="w-8 h-8 text-primary"/>
-                                </div>
-                                <h2 className="mt-6 text-xl font-bold text-gray-800">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="text-center glass-card p-12 mt-10"
+                            >
+                                <motion.div 
+                                    className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-md border border-primary/20"
+                                    animate={{ y: [0, -10, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                >
+                                    <SparklesIcon className="w-10 h-10 text-primary"/>
+                                </motion.div>
+                                <h2 className="mt-6 text-2xl font-bold text-gray-900">
                                     {activeTab === 'archived' ? "No archived roadmaps." : "Let's build your future."}
                                 </h2>
-                                <p className="mt-2 text-slate-500">
+                                <p className="mt-2 text-slate-600 max-w-md mx-auto">
                                     {activeTab === 'archived' ? "Your archived items will appear here." : "Your personalized AI-powered learning plan is just a few clicks away."}
                                 </p>
                                 {activeTab !== 'archived' && (
@@ -148,7 +198,7 @@ const DashboardHomePage: React.FC = () => {
                                         Create My First Roadmap
                                     </Button>
                                 )}
-                            </div>
+                            </motion.div>
                         )}
                     </motion.div>
                 </AnimatePresence>

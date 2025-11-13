@@ -27,29 +27,30 @@ const Step1CareerTrack: React.FC<StepProps> = ({ formData, updateFormData, handl
                     <motion.button 
                         key={track.id} 
                         onClick={() => handleSelect(track.name)} 
-                        className={`relative p-4 border-2 rounded-lg text-center transition-all duration-200 flex flex-col items-center justify-start h-40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                        className={`relative p-5 border-2 rounded-xl text-center transition-all duration-300 flex flex-col items-center justify-start h-40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50
                             ${formData.careerTrack === track.name 
-                                ? 'bg-primary-50 border-primary shadow-lg' 
-                                : 'bg-white border-slate-200 hover:border-primary-300'
+                                ? 'bg-primary/20 border-primary/40 shadow-lg shadow-primary/20' 
+                                : 'glass-card border-white/30 hover:border-primary/30 hover:shadow-md'
                             }`
                         }
                         aria-pressed={formData.careerTrack === track.name}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
                         animate={{ opacity: formData.careerTrack && formData.careerTrack !== track.name ? 0.6 : 1 }}
                     >
                         {formData.careerTrack === track.name && (
                             <motion.div 
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute top-2 right-2 bg-primary text-white rounded-full p-0.5"
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                                className="absolute top-3 right-3 bg-gradient-to-br from-primary to-primary-600 text-white rounded-full p-1.5 shadow-lg shadow-primary/30"
                             >
                                 <CheckIcon className="h-4 w-4" />
                             </motion.div>
                         )}
-                        <div className="text-primary">{track.icon}</div>
-                        <h3 className="font-semibold text-slate-800">{track.name}</h3>
-                        <p className="text-xs text-slate-500 mt-1">{track.description}</p>
+                        <div className="text-primary text-3xl mb-2">{track.icon}</div>
+                        <h3 className="font-bold text-gray-900 text-sm">{track.name}</h3>
+                        <p className="text-xs text-slate-600 mt-1 leading-tight">{track.description}</p>
                     </motion.button>
                 ))}
             </div>

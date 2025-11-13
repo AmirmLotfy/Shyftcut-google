@@ -34,21 +34,21 @@ const Sidebar: React.FC = () => {
         .toUpperCase() || '..';
 
     return (
-        <aside className="w-72 bg-white border-r border-gray-100 flex-col hidden lg:flex">
-            <div className="h-24 flex items-center px-8">
-                <Logo className="h-9 w-auto text-slate-900" />
+        <aside className="glass-sidebar w-72 flex-col hidden lg:flex">
+            <div className="h-24 flex items-center px-8 border-b border-white/20">
+                <Logo className="h-9 w-auto text-slate-900 transition-transform hover:scale-105" />
             </div>
-            <nav className="flex-1 px-6 py-4 space-y-2">
+            <nav className="flex-1 px-6 py-6 space-y-2">
                 {navItems.map(item => (
                      <NavLink
                         key={item.name}
                         to={item.href}
                         end={item.href === '/dashboard'}
                         className={({ isActive }) =>
-                          `flex items-center px-4 py-3 text-base rounded-xl transition-colors duration-200 ${
+                          `flex items-center px-4 py-3 text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
                             isActive
-                              ? 'bg-primary-50 text-primary font-semibold'
-                              : 'text-slate-600 hover:bg-gray-100 hover:text-slate-900'
+                              ? 'bg-primary/20 text-primary font-semibold border border-primary/30 shadow-md'
+                              : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 hover:border border-transparent hover:border-slate-200/50'
                           }`
                         }
                       >
@@ -56,17 +56,30 @@ const Sidebar: React.FC = () => {
                     </NavLink>
                 ))}
             </nav>
-            <div className="p-6 border-t border-gray-100">
-                 <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+            <div className="p-6 border-t border-white/20 glass-card m-4 rounded-xl">
+                 <div className="flex items-center gap-4 mb-4">
+                    {userProfile?.avatarUrl && userProfile.avatarUrl.trim() !== '' ? (
+                        <img 
+                            src={userProfile.avatarUrl} 
+                            alt={userProfile.name || 'User avatar'} 
+                            className="w-11 h-11 max-w-11 max-h-11 rounded-full object-cover border-2 border-primary/20 flex-shrink-0"
+                            style={{ maxWidth: '44px', maxHeight: '44px', width: '44px', height: '44px' }}
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                const nextEl = (e.target as HTMLImageElement).nextElementSibling;
+                                if (nextEl) nextEl.classList.remove('hidden');
+                            }}
+                        />
+                    ) : null}
+                    <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ${userProfile?.avatarUrl && userProfile.avatarUrl.trim() !== '' ? 'hidden' : ''}`}>
                         {userInitials}
                     </div>
-                    <div className="text-sm overflow-hidden">
+                    <div className="text-sm overflow-hidden min-w-0 flex-1">
                         <div className="font-semibold text-slate-800 truncate">{userProfile?.name}</div>
                         <div className="text-slate-500 truncate">{userProfile?.email}</div>
                     </div>
                 </div>
-                <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full mt-4 !justify-start text-slate-500 hover:!bg-gray-100">
+                <Button onClick={handleLogout} variant="glass" size="sm" className="w-full !justify-start text-slate-600 hover:!bg-white/60">
                     Log Out
                 </Button>
             </div>
@@ -84,7 +97,7 @@ const DashboardLayout: React.FC = () => {
   }
   
   return (
-    <div className="flex h-screen bg-gray-50 font-sans">
+    <div className="flex h-screen font-sans">
       <Sidebar />
       <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
         <motion.div 
