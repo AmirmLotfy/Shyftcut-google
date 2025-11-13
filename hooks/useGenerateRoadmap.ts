@@ -1,9 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { UserPreferences } from '../types';
-import { db } from '../services/firebase';
-import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { generateRoadmapFromGemini } from '../services/geminiService';
+import { functions } from '../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 
 export const useGenerateRoadmap = () => {
     const [loading, setLoading] = useState(false);
@@ -35,44 +34,18 @@ export const useGenerateRoadmap = () => {
         }
         
         try {
-            const roadmapData = await generateRoadmapFromGemini(preferences);
-            const { milestones, ...roadmapDetails } = roadmapData;
-
-            const userTracksCollection = collection(db, `tracks/${user.uid}/roadmaps`);
-            const roadmapRef = doc(userTracksCollection);
+            const generateRoadmapFunction = httpsCallable(functions, 'generateRoadmap');
+            const result = await generateRoadmapFunction({ preferences });
             
-            const batch = writeBatch(db);
+            const data = result.data as { roadmapId: string };
+            if (!data || !data.roadmapId) {
+                throw new Error("Cloud function did not return a valid roadmap ID.");
+            }
 
-            batch.set(roadmapRef, {
-                ...roadmapDetails,
-                track: preferences.careerTrack,
-                level: preferences.experienceLevel,
-                status: "in-progress",
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            });
-
-            milestones.forEach((milestone: any) => {
-                const milestoneRef = doc(roadmapRef, 'milestones', milestone.id);
-                const milestoneWithStatus = {
-                    ...milestone,
-                    tasks: milestone.tasks.map((task: any) => ({ ...task, completed: false })),
-                    courses: milestone.courses.map((course: any) => ({ ...course, completed: false })),
-                };
-                batch.set(milestoneRef, milestoneWithStatus);
-            });
-            
-            const userDocRef = doc(db, 'users', user.uid);
-            batch.update(userDocRef, {
-                lastRoadmapGeneratedAt: serverTimestamp(),
-            });
-
-            await batch.commit();
-            
-            return { roadmapId: roadmapRef.id };
+            return { roadmapId: data.roadmapId };
 
         } catch (err: any) {
-            console.error("Error in generateRoadmap hook:", err);
+            console.error("Error calling generateRoadmap cloud function:", err);
             const errorMessage = err.message || 'An unknown error occurred while generating the roadmap. Please try again later.';
             setError(errorMessage);
             throw new Error(errorMessage);

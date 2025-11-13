@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
-import { gradeAnswerFromGemini } from '../services/geminiService';
 import { Question } from '../types';
+import { functions } from '../services/firebase';
+import { httpsCallable } from 'firebase/functions';
 
 interface GradingResult {
     correct: boolean;
@@ -16,10 +17,11 @@ export const useAnswerGrading = () => {
         setIsGrading(true);
         setError(null);
         try {
-            const result = await gradeAnswerFromGemini(question, userAnswer);
-            return result as GradingResult;
+            const gradeAnswerFunction = httpsCallable(functions, 'gradeAnswer');
+            const result = await gradeAnswerFunction({ question, userAnswer });
+            return result.data as GradingResult;
         } catch (e: any) {
-            console.error("Error calling grading service:", e);
+            console.error("Error calling gradeAnswer cloud function:", e);
             setError(e.message || "Could not grade answer automatically.");
             return null;
         } finally {

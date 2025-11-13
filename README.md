@@ -3,6 +3,8 @@
 
 **Your personalized AI mentor for the future of work.**
 
+![Shyftcut Landing Page Hero](https://storage.googleapis.com/shyftcutnew.appspot.com/readme-assets/shyftcut-hero.png)
+
 Shyftcut is a feature-rich, AI-powered learning roadmap generator designed for students, professionals, and career-shifters. It provides personalized, step-by-step learning paths based on user goals, experience, and preferences, with a special focus on the Egyptian and GCC markets.
 
 ---

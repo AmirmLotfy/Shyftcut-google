@@ -299,12 +299,12 @@ export const updateRoadmapStatus = functions.https.onCall(async (data, context) 
   }
 });
 
-export const gradeShortAnswer = functions.https.onCall(async (data, context) => {
+export const gradeAnswer = functions.https.onCall(async (data, context) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (!geminiApiKey) {
-    throw new functions.https.HttpsError("failed-precondition", "The GEMINI_API_KEY environment variable is not set. Please set it in the Firebase console or using `firebase functions:secrets:set`.");
+    throw new functions.https.HttpsError("failed-precondition", "The GEMINI_API_KEY environment variable is not set.");
   }
-  
+
   if (!context.auth) {
     throw new functions.https.HttpsError(
       "unauthenticated",
@@ -312,17 +312,16 @@ export const gradeShortAnswer = functions.https.onCall(async (data, context) => 
     );
   }
 
-  const {userAnswer, expectedAnswer} = data;
-  if (!userAnswer || !expectedAnswer) {
+  const { question, userAnswer } = data;
+  if (!question || typeof userAnswer !== "string") {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "Missing user answer or expected answer.",
+      "Missing or invalid arguments: 'question' and 'userAnswer' are required.",
     );
   }
 
   const ai = new GoogleGenAI({apiKey: geminiApiKey});
-  
-  // Since this function doesn't use googleSearch, we can use responseSchema for reliable JSON.
+
   const gradingSchema = {
     type: Type.OBJECT,
     properties: {
@@ -333,13 +332,32 @@ export const gradeShortAnswer = functions.https.onCall(async (data, context) => 
     required: ["correct", "similarity", "explanation"],
   };
 
-  const prompt = `
-    Please evaluate the user's answer for a quiz question based on semantic similarity.
-    Expected Answer: "${expectedAnswer}"
-    User's Answer: "${userAnswer}"
-    A similarity score of 0.75 or higher should be considered correct.
-    Return a JSON object with your evaluation.
-  `;
+  let prompt: string;
+  if (question.type === "multiple-choice") {
+    prompt = `
+            You are a quiz grading AI. Evaluate the user's answer for the following multiple-choice question.
+            Question: "${question.text}"
+            Options: ${JSON.stringify(question.options)}
+            Correct Answer is: "${question.correctAnswer}"
+            User's Answer: "${userAnswer}"
+
+            Respond with a JSON object. 
+            - "correct" should be true if the user's answer is correct, false otherwise.
+            - "similarity" should be 1 if correct, 0 if incorrect.
+            - "explanation" should be the pre-defined explanation: "${question.explanation}". If the user is wrong, briefly reiterate why the correct answer is right based on the provided explanation. If the user is correct, simply use the provided explanation.
+        `;
+  } else { // short-answer
+    prompt = `
+            You are a quiz grading AI. Evaluate the user's answer for the following short-answer question based on semantic similarity.
+            The official correct answer is: "${question.correctAnswer}"
+            The user's answer is: "${userAnswer}"
+            
+            Respond with a JSON object.
+            - "correct" should be true if the user's answer is semantically similar to the correct answer (a similarity score of 0.75 or higher).
+            - "similarity" should be a float between 0.0 and 1.0 representing the semantic similarity.
+            - "explanation" should be based on the provided explanation: "${question.explanation}". Your explanation should confirm if the user was correct and elaborate based on the provided explanation.
+        `;
+  }
 
   try {
     const response = await ai.models.generateContent({
@@ -356,6 +374,7 @@ export const gradeShortAnswer = functions.https.onCall(async (data, context) => 
     throw new functions.https.HttpsError("internal", "Failed to grade answer.");
   }
 });
+
 
 /**
  * Firestore trigger to copy a roadmap to a public collection when it's shared.
