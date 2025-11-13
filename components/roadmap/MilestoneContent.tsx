@@ -1,6 +1,7 @@
 
+
 import React from 'react';
-import { Milestone } from '../../types';
+import { Milestone, Task } from '../../types';
 import TaskList from './TaskList';
 import CourseList from './CourseList';
 import SuccessCriteria from './SuccessCriteria';
@@ -12,6 +13,7 @@ interface MilestoneContentProps {
     roadmapId: string;
     onUpdateTask: (milestoneId: string, taskId: string, completed: boolean) => void;
     onUpdateCourse: (milestoneId: string, courseId: string, completed: boolean) => void;
+    onStartFocus: (task: Task) => void;
 }
 
 const Section: React.FC<{title: string; children: React.ReactNode}> = ({ title, children }) => (
@@ -26,7 +28,7 @@ const Section: React.FC<{title: string; children: React.ReactNode}> = ({ title, 
 );
 
 
-const MilestoneContent: React.FC<MilestoneContentProps> = ({ milestone, roadmapId, onUpdateTask, onUpdateCourse }) => {
+const MilestoneContent: React.FC<MilestoneContentProps> = ({ milestone, roadmapId, onUpdateTask, onUpdateCourse, onStartFocus }) => {
     return (
         <div className="space-y-12">
             <div>
@@ -39,6 +41,7 @@ const MilestoneContent: React.FC<MilestoneContentProps> = ({ milestone, roadmapI
                 <TaskList 
                     tasks={milestone.tasks} 
                     onToggle={(taskId, completed) => onUpdateTask(milestone.id, taskId, completed)}
+                    onStartFocus={onStartFocus}
                 />
             </Section>
             

@@ -9,6 +9,30 @@ admin.initializeApp();
 const db = admin.firestore();
 
 /**
+ * Helper function to delete all documents in a collection in batches.
+ * @param {admin.firestore.CollectionReference} collectionRef The collection to delete.
+ * @param {number} batchSize The number of documents to delete in each batch.
+ */
+const deleteCollection = async (
+  collectionRef: admin.firestore.CollectionReference,
+  batchSize: number,
+) => {
+  const query = collectionRef.limit(batchSize);
+  let snapshot = await query.get();
+
+  while (snapshot.size > 0) {
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    snapshot = await query.get();
+  }
+};
+
+
+/**
  * Triggered on new user creation to initialize their profile in Firestore.
  */
 export const onUserCreate = functions.auth.user().onCreate(async (user) => {
@@ -409,16 +433,26 @@ export const deleteRoadmap = functions.https.onCall(async (data, context) => {
   const publicRoadmapRef = db.collection("publicRoadmaps").doc(roadmapId);
 
   try {
-    // Use recursiveDelete to remove the roadmap and all its subcollections
     functions.logger.log(`User ${userId} is deleting roadmap ${roadmapId}`);
-    await admin.firestore().recursiveDelete(roadmapRef);
+
+    // Delete subcollections first
+    const milestonesRef = roadmapRef.collection("milestones");
+    const quizResultsRef = roadmapRef.collection("quizResults");
+
+    await deleteCollection(milestonesRef, 50);
+    await deleteCollection(quizResultsRef, 50);
 
     // Also delete the public version if it exists
     const publicDoc = await publicRoadmapRef.get();
     if (publicDoc.exists) {
-      functions.logger.log(`Deleting public roadmap ${roadmapId}`);
-      await admin.firestore().recursiveDelete(publicRoadmapRef);
+        const publicMilestonesRef = publicRoadmapRef.collection("milestones");
+        await deleteCollection(publicMilestonesRef, 50);
+        await publicRoadmapRef.delete();
+        functions.logger.log(`Deleted public roadmap ${roadmapId}`);
     }
+
+    // Finally, delete the roadmap document itself
+    await roadmapRef.delete();
 
     return { success: true, message: "Roadmap deleted successfully." };
   } catch (error) {
@@ -447,13 +481,42 @@ export const deleteUserData = functions.https.onCall(async (data, context) => {
 
   const userId = context.auth.uid;
   try {
-    // This will recursively delete all subcollections (roadmaps, milestones, etc.)
-    await admin.firestore().recursiveDelete(db.collection("tracks").doc(userId));
+    const userTracksRef = db.collection("tracks").doc(userId);
+    const roadmapsRef = userTracksRef.collection("roadmaps");
+    const roadmapsSnapshot = await roadmapsRef.get();
+
+    // Delete all roadmaps and their subcollections
+    for (const roadmapDoc of roadmapsSnapshot.docs) {
+        const roadmapId = roadmapDoc.id;
+        functions.logger.log(`Deleting roadmap ${roadmapId} for user ${userId}`);
+        const milestonesRef = roadmapDoc.ref.collection("milestones");
+        const quizResultsRef = roadmapDoc.ref.collection("quizResults");
+
+        await deleteCollection(milestonesRef, 50);
+        await deleteCollection(quizResultsRef, 50);
+        await roadmapDoc.ref.delete();
+
+        // Also delete public version
+        const publicRoadmapRef = db.collection("publicRoadmaps").doc(roadmapId);
+        const publicDoc = await publicRoadmapRef.get();
+        if (publicDoc.exists) {
+            const publicMilestonesRef = publicRoadmapRef.collection("milestones");
+            await deleteCollection(publicMilestonesRef, 50);
+            await publicRoadmapRef.delete();
+        }
+    }
+
+    // Delete the user's main track document (if it exists)
+    const trackDoc = await userTracksRef.get();
+    if (trackDoc.exists) {
+      await userTracksRef.delete();
+    }
     // Delete the user profile document
     await db.collection("users").doc(userId).delete();
     // Delete the user from Firebase Authentication
     await admin.auth().deleteUser(userId);
-    return {success: true};
+
+    return {success: true, message: "User data deleted successfully."};
   } catch (error) {
     console.error("Error deleting user data:", error);
     throw new functions.https.HttpsError(

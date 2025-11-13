@@ -1,7 +1,7 @@
 
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -54,26 +54,27 @@ const faqs = [
 const blogPosts = [
   {
     category: 'Career Advice',
-    title: 'The Ultimate Guide to a Successful Career Change',
-    excerpt: 'Feeling stuck? It might be time for a change. Here’s everything you need to know about switching jobs, fields, or industries to find a career you love.',
-    href: 'https://www.themuse.com/advice/the-ultimate-guide-to-a-successful-career-change',
-    imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80'
+    title: 'Your First Tech Career Change: A 5-Step Blueprint',
+    excerpt: 'Shifting into tech can be daunting, but with a clear plan, it\'s achievable. Follow our 5-step blueprint for a successful transition from identifying your path to landing your first role.',
+    href: '/blog/tech-career-change',
+    imageUrl: 'https://images.unsplash.com/photo-1556740738-b6a63e2775d2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
   },
   {
     category: 'Learning Science',
-    title: 'Learning How to Learn: A Guide for All Ages',
-    excerpt: 'The ability to learn is the most important skill you can have. But how do you learn? Here\'s our definitive guide to learning how to learn effectively.',
-    href: 'https://fs.blog/learning-how-to-learn/',
-    imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1532&q=80'
+    title: 'Mastering the Art of Self-Learning: A Guide to Becoming an Autodidact',
+    excerpt: 'In a world of constant change, the ability to learn effectively on your own is a superpower. Discover the mindset, strategies, and tools to become a successful self-learner.',
+    href: '/blog/mastering-self-learning',
+    imageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
   },
   {
-    category: 'Tech Careers',
-    title: 'What Is an AI Engineer? A 2024 Career Guide',
-    excerpt: 'Artificial intelligence is changing the world. Discover what an AI engineer does, the skills you need, and how to start a career in this exciting field.',
-    href: 'https://www.coursera.org/articles/ai-engineer',
-    imageUrl: 'https://images.unsplash.com/photo-1620712943543-2858200f745a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
+    category: 'Future of Work',
+    title: 'AI is Not Just for Engineers: 5 Ways to Use AI in Your Career Today',
+    excerpt: 'Think AI is only for coders? Think again. Learn five practical ways professionals in any field can leverage AI tools to become more productive and valuable.',
+    href: '/blog/ai-in-your-career',
+    imageUrl: 'https://images.unsplash.com/photo-1677756119517-756a188d2d94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
   },
 ];
+
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -279,7 +280,7 @@ const LandingPage: React.FC = () => {
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <a href={post.href} target="_blank" rel="noopener noreferrer" className="block group">
+                  <Link to={post.href} className="block group">
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-2 h-full flex flex-col">
                       <img className="h-48 w-full object-cover" src={post.imageUrl} alt="" />
                       <div className="p-6 flex flex-col flex-grow">
@@ -288,7 +289,7 @@ const LandingPage: React.FC = () => {
                         <p className="mt-3 text-base text-slate-600 line-clamp-3 flex-grow">{post.excerpt}</p>
                       </div>
                     </div>
-                  </a>
+                  </Link>
                 </motion.div>
               ))}
             </div>

@@ -8,11 +8,12 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, functions } from '../services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { AnimatePresence } from 'framer-motion';
+import { Task } from '../types';
 
 import RoadmapSidebar from '../components/roadmap/RoadmapSidebar';
 import RoadmapHeader from '../components/roadmap/RoadmapHeader';
 import MilestoneContent from '../components/roadmap/MilestoneContent';
-import PomodoroTimer from '../components/roadmap/PomodoroTimer';
+import FocusModeTimer from '../components/roadmap/FocusModeTimer';
 import MobileBottomNav from '../components/roadmap/MobileBottomNav';
 import MobileRoadmapHeader from '../components/roadmap/MobileRoadmapHeader';
 import ShareModal from '../components/ShareModal';
@@ -31,6 +32,15 @@ const RoadmapDashboardPage: React.FC = () => {
     const [actionError, setActionError] = useState<string | null>(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    
+    // State for new Focus Mode Timer
+    const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
+    const [focusTask, setFocusTask] = useState<Task | null>(null);
+
+    const handleStartFocus = (task: Task) => {
+        setFocusTask(task);
+        setIsFocusModeOpen(true);
+    };
 
 
     React.useEffect(() => {
@@ -176,17 +186,15 @@ const RoadmapDashboardPage: React.FC = () => {
                     />
                     {actionError && <p className="text-center text-red-500 my-4">{actionError}</p>}
                     
-                    <div className="mt-8 lg:grid lg:grid-cols-12 lg:gap-8">
-                        <div className="lg:col-span-8">
+                    <div className="mt-8">
+                        <div className="max-w-4xl mx-auto">
                              <MilestoneContent 
                                 milestone={selectedMilestone}
                                 roadmapId={roadmapId!}
                                 onUpdateTask={updateTaskCompletion}
                                 onUpdateCourse={updateCourseCompletion}
+                                onStartFocus={handleStartFocus}
                             />
-                        </div>
-                        <div className="mt-8 lg:mt-0 lg:col-span-4">
-                            <PomodoroTimer onSessionComplete={(minutes) => updateTimeSpent(selectedMilestoneId!, minutes)} />
                         </div>
                     </div>
                 </div>
@@ -211,6 +219,16 @@ const RoadmapDashboardPage: React.FC = () => {
                     roadmap={roadmap} 
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={handleSaveEdit}
+                />
+            )}
+            {isFocusModeOpen && selectedMilestone && focusTask && (
+                <FocusModeTimer 
+                    task={focusTask}
+                    onClose={() => setIsFocusModeOpen(false)}
+                    onSessionComplete={(minutes) => {
+                        updateTimeSpent(selectedMilestone.id, minutes);
+                        setIsFocusModeOpen(false);
+                    }}
                 />
             )}
         </AnimatePresence>
